@@ -56,6 +56,11 @@ export { CustomElement } from "./base/web-components/custom-element";
 export { KCUIElement } from "./kc-ui/element";
 
 // ========================================
+// React Components (NEW)
+// ========================================
+export * from "./react";
+
+// ========================================
 // Main UI Components (already registered globally)
 // ========================================
 export { KCBoardAppElement } from "./kicanvas/elements/kc-board/app";
