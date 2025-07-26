@@ -4,10 +4,7 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import { listen } from "../base/events";
 import { LocalStorage } from "../base/local-storage";
-import type { Constructor } from "../base/types";
-import type { KCUIElement } from "../kc-ui";
 import type { Theme } from "../kicad";
 import themes from "./themes";
 
@@ -54,29 +51,4 @@ export class PreferencesChangeEvent extends CustomEvent<PreferencesChangeEventDe
     }
 }
 
-/**
- * Mixin used to add provideContext and requestContext methods.
- */
-export function WithPreferences<T extends Constructor<KCUIElement>>(Base: T) {
-    return class WithPreferences extends Base {
-        constructor(...args: any[]) {
-            super(...args);
 
-            this.addDisposable(
-                listen(
-                    Preferences.INSTANCE,
-                    PreferencesChangeEvent.type,
-                    () => {
-                        this.preferenceChangeCallback(this.preferences);
-                    },
-                ),
-            );
-        }
-
-        get preferences() {
-            return Preferences.INSTANCE;
-        }
-
-        async preferenceChangeCallback(preferences: Preferences) {}
-    };
-}
