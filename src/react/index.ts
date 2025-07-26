@@ -24,6 +24,8 @@ export { FloatingToolbar } from './ui/FloatingToolbar';
 // Main Application Components
 export { KiCanvasEmbed, KiCanvasSource } from './components/KiCanvasEmbed';
 export { KiCanvasShell } from './components/KiCanvasShell';
+export { KiCanvasSchematicApp } from './components/KiCanvasSchematicApp';
+export { KiCanvasBoardApp } from './components/KiCanvasBoardApp';
 
 // Type exports
 export type { ButtonProps } from './ui/Button';
@@ -39,3 +41,5 @@ export type { ActivitySideBarProps, ActivityData } from './ui/ActivitySideBar';
 export type { FloatingToolbarProps } from './ui/FloatingToolbar';
 export type { KiCanvasEmbedProps, KiCanvasSource as KiCanvasSourceType } from './components/KiCanvasEmbed';
 export type { KiCanvasShellProps } from './components/KiCanvasShell';
+export type { KiCanvasSchematicAppProps } from './components/KiCanvasSchematicApp';
+export type { KiCanvasBoardAppProps } from './components/KiCanvasBoardApp';

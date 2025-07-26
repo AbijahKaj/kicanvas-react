@@ -10,6 +10,7 @@ import type { ReactNode } from 'react';
 // Context for providing shared services/data (like the project)
 export interface KiCanvasContextType {
     project?: any; // Project instance
+    reload?: () => void; // Function to reload the project
     [key: string]: any;
 }
 
