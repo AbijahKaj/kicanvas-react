@@ -18,6 +18,7 @@ export async function bundle(options = {}) {
         target: "es2022",
         keepNames: true,
         sourcemap: false,
+        external: ["react", "react-dom", "react-dom/client"],
         loader: {
             ".js": "ts",
             ".tsx": "tsx",

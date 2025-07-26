@@ -8,10 +8,16 @@
 import "./base/livereload";
 
 // ========================================
+// React Re-exports (for bundled usage)
+// ========================================
+export { default as React } from "react";
+export { createRoot } from "react-dom/client";
+
+// ========================================
 // Main React Components API (Primary API)
 // ========================================
-export { 
-    KiCanvasEmbed, 
+export {
+    KiCanvasEmbed,
     KiCanvasShell,
     KiCanvasSchematicApp,
     KiCanvasBoardApp,
@@ -27,7 +33,7 @@ export {
     Range,
     TextFilterInput,
     FloatingToolbar,
-    FocusOverlay
+    FocusOverlay,
 } from "./react";
 
 // Export React component prop types
@@ -47,7 +53,7 @@ export type {
     RangeProps,
     TextFilterInputProps,
     FloatingToolbarProps,
-    FocusOverlayProps
+    FocusOverlayProps,
 } from "./react";
 
 // ========================================
@@ -91,7 +97,11 @@ export { Logger } from "./base/log";
 // ========================================
 // React Context and Utilities
 // ========================================
-export { BaseComponent, KiCanvasProvider, useKiCanvasContext } from "./react/base/BaseComponent";
+export {
+    BaseComponent,
+    KiCanvasProvider,
+    useKiCanvasContext,
+} from "./react/base/BaseComponent";
 
 // ========================================
 // Events
