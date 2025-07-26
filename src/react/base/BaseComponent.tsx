@@ -85,6 +85,7 @@ export interface BaseComponentProps {
     children?: ReactNode;
     className?: string;
     style?: React.CSSProperties;
+    styles?: string; // Component-specific CSS styles
 }
 
 /**
@@ -94,9 +95,29 @@ export const BaseComponent: React.FC<BaseComponentProps> = ({
     children, 
     className = '', 
     style = {},
+    styles,
     ...props 
 }) => {
     const combinedClassName = `kc-ui ${className}`.trim();
+    
+    // Inject component-specific styles if provided
+    React.useEffect(() => {
+        if (!styles) return;
+
+        const styleId = `kc-component-styles-${Math.random().toString(36).substr(2, 9)}`;
+        const styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        styleElement.textContent = styles;
+        document.head.appendChild(styleElement);
+        
+        // Cleanup function to remove styles when component unmounts
+        return () => {
+            const existingStyle = document.getElementById(styleId);
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+        };
+    }, [styles]);
     
     return (
         <div className={combinedClassName} style={style} {...props}>
