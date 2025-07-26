@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KiCanvas React Components Exports Test</title>
+    <style>
+        body {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            overflow: auto;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 KiCanvas React Components Export Test</h1>
+    <p>Testing that React components are properly exported and web components are removed.</p>
+    
+    <div id="status" class="status info">Loading KiCanvas module...</div>
+    
+    <h2>📦 Exported Components</h2>
+    <pre id="exports"></pre>
+    
+    <h2>🚫 Web Component Check</h2>
+    <pre id="webComponents"></pre>
+    
+    <h2>✅ React Component Check</h2>
+    <pre id="reactComponents"></pre>
+
+    <script type="module">
+        const statusEl = document.getElementById('status');
+        const exportsEl = document.getElementById('exports');
+        const webComponentsEl = document.getElementById('webComponents');
+        const reactComponentsEl = document.getElementById('reactComponents');
+        
+        try {
+            statusEl.textContent = 'Loading KiCanvas module...';
+            
+            // Import KiCanvas components
+            const kicanvas = await import('./kicanvas/kicanvas.js');
+            
+            statusEl.className = 'status success';
+            statusEl.textContent = '✅ KiCanvas module loaded successfully!';
+            
+            // List all exports
+            const exports = Object.keys(kicanvas).sort();
+            exportsEl.textContent = `Found ${exports.length} exports:\n\n${exports.join('\n')}`;
+            
+            // Check for web component exports (should be minimal/none)
+            const webComponentExports = exports.filter(name => 
+                name.includes('Element') || 
+                name.includes('CustomElement') || 
+                name.includes('KCUIElement')
+            );
+            
+            if (webComponentExports.length === 0) {
+                webComponentsEl.textContent = '✅ GOOD: No web component exports found!\nWeb components have been successfully removed.';
+            } else {
+                webComponentsEl.textContent = `⚠️ Found ${webComponentExports.length} web component exports:\n${webComponentExports.join('\n')}\n\nThese should ideally be removed for a React-only build.`;
+            }
+            
+            // Check for React component exports
+            const reactExports = exports.filter(name => 
+                name.startsWith('KiCanvas') && !name.includes('Element') ||
+                ['Button', 'Panel', 'Icon', 'Menu', 'App', 'ActivitySideBar', 'SplitView'].includes(name)
+            );
+            
+            reactComponentsEl.textContent = `Found ${reactExports.length} React component exports:\n${reactExports.join('\n')}`;
+            
+            // Test that React components are actually functions
+            const reactComponentTests = [];
+            for (const name of ['KiCanvasEmbed', 'KiCanvasShell', 'KiCanvasSchematicApp', 'KiCanvasBoardApp']) {
+                if (name in kicanvas) {
+                    const component = kicanvas[name];
+                    const isFunction = typeof component === 'function';
+                    reactComponentTests.push(`${name}: ${isFunction ? '✅ Function' : '❌ Not a function'}`);
+                } else {
+                    reactComponentTests.push(`${name}: ❌ Not exported`);
+                }
+            }
+            
+            reactComponentsEl.textContent += `\n\nReact Component Tests:\n${reactComponentTests.join('\n')}`;
+            
+            console.log('✅ KiCanvas exports:', exports);
+            console.log('🚫 Web component exports:', webComponentExports);
+            console.log('⚛️ React exports:', reactExports);
+            
+        } catch (error) {
+            console.error('Failed to load KiCanvas:', error);
+            statusEl.className = 'status error';
+            statusEl.textContent = `❌ Failed to load KiCanvas: ${error.message}`;
+            
+            exportsEl.textContent = 'Failed to load module';
+            webComponentsEl.textContent = 'Failed to load module';
+            reactComponentsEl.textContent = 'Failed to load module';
+        }
+    </script>
+</body>
+</html>

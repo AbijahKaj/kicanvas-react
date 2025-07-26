@@ -4,25 +4,51 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-// Side effects - Register web components globally
+// Side effects - Register livereload only (removed web component registrations)
 import "./base/livereload";
-import { KiCanvasEmbedElement } from "./kicanvas/elements/kicanvas-embed";
-import { KiCanvasShellElement } from "./kicanvas/elements/kicanvas-shell";
 
-// Export main React components first (recommended API)
+// ========================================
+// Main React Components API (Primary API)
+// ========================================
 export { 
     KiCanvasEmbed, 
     KiCanvasShell,
+    KiCanvasSchematicApp,
+    KiCanvasBoardApp,
     KiCanvasSource,
     App,
     Button,
     Icon,
     Panel,
-    Menu
+    Menu,
+    ActivitySideBar,
+    SplitView,
+    View,
+    Range,
+    TextFilterInput,
+    FloatingToolbar,
+    FocusOverlay
 } from "./react";
 
-// Export legacy web components for backward compatibility
-export { KiCanvasEmbedElement, KiCanvasShellElement };
+// Export React component prop types
+export type {
+    KiCanvasEmbedProps,
+    KiCanvasShellProps,
+    KiCanvasSchematicAppProps,
+    KiCanvasBoardAppProps,
+    ActivitySideBarProps,
+    ButtonProps,
+    IconProps,
+    PanelProps,
+    MenuProps,
+    AppProps,
+    SplitViewProps,
+    ViewProps,
+    RangeProps,
+    TextFilterInputProps,
+    FloatingToolbarProps,
+    FocusOverlayProps
+} from "./react";
 
 // ========================================
 // Core KiCad File Parsers & Types
@@ -63,27 +89,9 @@ export { Color } from "./base/color";
 export { Logger } from "./base/log";
 
 // ========================================
-// Web Components Base Classes
+// React Context and Utilities
 // ========================================
-export { CustomElement } from "./base/web-components/custom-element";
-export { KCUIElement } from "./kc-ui/element";
-
-// ========================================
-// React Components & Main Application Components (NEW)
-// ========================================
-export * from "./react";
-
-// ========================================
-// Legacy Web Components (maintained for backward compatibility)
-// ========================================
-
-// ========================================
-// Main UI Components (already registered globally)
-// ========================================
-export { KCBoardAppElement } from "./kicanvas/elements/kc-board/app";
-export { KCSchematicAppElement } from "./kicanvas/elements/kc-schematic/app";
-export { KCBoardViewerElement } from "./kicanvas/elements/kc-board/viewer";
-export { KCSchematicViewerElement } from "./kicanvas/elements/kc-schematic/viewer";
+export { BaseComponent, KiCanvasProvider, useKiCanvasContext } from "./react/base/BaseComponent";
 
 // ========================================
 // Events
