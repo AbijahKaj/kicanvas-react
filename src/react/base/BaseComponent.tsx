@@ -91,13 +91,13 @@ export interface BaseComponentProps {
 /**
  * Base component that provides common functionality equivalent to KCUIElement
  */
-export const BaseComponent: React.FC<BaseComponentProps> = ({ 
+export const BaseComponent = React.forwardRef<HTMLDivElement, BaseComponentProps>(({ 
     children, 
     className = '', 
     style = {},
     styles,
     ...props 
-}) => {
+}, ref) => {
     const combinedClassName = `kc-ui ${className}`.trim();
     
     // Inject component-specific styles if provided
@@ -120,8 +120,8 @@ export const BaseComponent: React.FC<BaseComponentProps> = ({
     }, [styles]);
     
     return (
-        <div className={combinedClassName} style={style} {...props}>
+        <div className={combinedClassName} style={style} ref={ref} {...props}>
             {children}
         </div>
     );
-};
+});
