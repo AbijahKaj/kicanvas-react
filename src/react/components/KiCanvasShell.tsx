@@ -4,15 +4,21 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BaseComponent, KiCanvasProvider } from '../base/BaseComponent';
 import { App } from '../ui/App';
 import { Project } from '../../kicanvas/project';
+import { KiCanvasSchematicApp } from './KiCanvasSchematicApp';
+import { KiCanvasBoardApp } from './KiCanvasBoardApp';
 
 export interface KiCanvasShellProps {
     src?: string;
     loading?: boolean;
     loaded?: boolean;
+    disableInteraction?: boolean;
+    onProjectLoaded?: (project: Project) => void;
+    onProjectError?: (error: Error) => void;
+    onReload?: () => void;
     className?: string;
     style?: React.CSSProperties;
     children?: React.ReactNode;
@@ -110,12 +116,16 @@ const shellStyles = `
 
 /**
  * KiCanvasShell is the main standalone application shell.
- * React equivalent of KiCanvasShellElement.
+ * React equivalent of KiCanvasShellElement with full React implementation.
  */
 export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
     src,
     loading = false,
     loaded = false,
+    disableInteraction = false,
+    onProjectLoaded,
+    onProjectError,
+    onReload,
     className,
     style,
     children,
@@ -124,37 +134,11 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
     const [project] = useState(() => new Project());
     const [isLoaded, setIsLoaded] = useState(loaded);
     const [linkValue, setLinkValue] = useState('');
-    const schematicAppRef = useRef<HTMLElement | null>(null);
-    const boardAppRef = useRef<HTMLElement | null>(null);
+    const [loadError, setLoadError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        const initializeFromURL = async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const githubPaths = urlParams.getAll('github');
-
-            if (src) {
-                const { FetchFileSystem } = await import('../../kicanvas/services/vfs');
-                const vfs = new FetchFileSystem([src]);
-                await setupProject(vfs);
-                return;
-            }
-
-            if (githubPaths.length) {
-                const { GitHubFileSystem } = await import('../../kicanvas/services/github-vfs');
-                const vfs = await GitHubFileSystem.fromURLs(...githubPaths);
-                await setupProject(vfs);
-                return;
-            }
-
-            // Set up drag and drop for files
-            setupDropTarget();
-        };
-
-        initializeFromURL();
-    }, [src]);
-
-    const setupProject = async (vfs: any) => {
+    const setupProject = useCallback(async (vfs: any) => {
         setIsLoaded(false);
+        setLoadError(null);
 
         try {
             await project.load?.(vfs);
@@ -162,10 +146,54 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                 project.set_active_page(project.first_page);
             }
             setIsLoaded(true);
+            onProjectLoaded?.(project);
         } catch (error) {
-            console.error('Failed to load project:', error);
+            const err = error as Error;
+            console.error('Failed to load project:', err);
+            setLoadError(err);
+            onProjectError?.(err);
         }
-    };
+    }, [project, onProjectLoaded, onProjectError]);
+
+    const handleReload = useCallback(() => {
+        if (src) {
+            // Reload from src
+            (async () => {
+                const { FetchFileSystem } = await import('../../kicanvas/services/vfs');
+                const vfs = new FetchFileSystem([src]);
+                await setupProject(vfs);
+            })();
+        } else {
+            // Reload from URL params
+            initializeFromURL();
+        }
+    }, [src, setupProject]);
+
+    const initializeFromURL = useCallback(async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const githubPaths = urlParams.getAll('github');
+
+        if (src) {
+            const { FetchFileSystem } = await import('../../kicanvas/services/vfs');
+            const vfs = new FetchFileSystem([src]);
+            await setupProject(vfs);
+            return;
+        }
+
+        if (githubPaths.length) {
+            const { GitHubFileSystem } = await import('../../kicanvas/services/github-vfs');
+            const vfs = await GitHubFileSystem.fromURLs(...githubPaths);
+            await setupProject(vfs);
+            return;
+        }
+
+        // Set up drag and drop for files
+        setupDropTarget();
+    }, [src, setupProject]);
+
+    useEffect(() => {
+        initializeFromURL();
+    }, [initializeFromURL]);
 
     const setupDropTarget = () => {
         // In a real implementation, this would set up file drag/drop handling
@@ -197,29 +225,11 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
         } catch (error) {
             console.error('Failed to load from GitHub:', error);
         }
-    }, []);
-
-    // Create app elements using web components for now
-    useEffect(() => {
-        if (!isLoaded || !project) return;
-
-        // Create schematic app
-        if (!schematicAppRef.current) {
-            const schematicApp = document.createElement('kc-schematic-app');
-            schematicApp.setAttribute('controls', 'full');
-            schematicAppRef.current = schematicApp;
-        }
-
-        // Create board app
-        if (!boardAppRef.current) {
-            const boardApp = document.createElement('kc-board-app');
-            boardApp.setAttribute('controls', 'full');
-            boardAppRef.current = boardApp;
-        }
-    }, [isLoaded, project]);
+    }, [setupProject]);
 
     const contextValue = {
-        project: project
+        project: project,
+        reload: handleReload
     };
 
     const classes = [
@@ -265,6 +275,7 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                                 autoFocus
                             />
                             <p>or drag & drop your KiCAD files</p>
+                            {loadError && <p style={{color: 'red'}}>Error: {loadError.message}</p>}
                             <p className="note">
                                 KiCanvas is{' '}
                                 <a
@@ -308,21 +319,19 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                         </section>
                     )}
                     <main>
-                        {/* Web component integration - will be replaced with React components later */}
-                        <div 
-                            ref={el => {
-                                if (el && schematicAppRef.current && !el.contains(schematicAppRef.current)) {
-                                    el.appendChild(schematicAppRef.current);
-                                }
-                            }}
-                        />
-                        <div 
-                            ref={el => {
-                                if (el && boardAppRef.current && !el.contains(boardAppRef.current)) {
-                                    el.appendChild(boardAppRef.current);
-                                }
-                            }}
-                        />
+                        {/* React components only - no web components */}
+                        {isLoaded && project.has_schematics && (
+                            <KiCanvasSchematicApp
+                                controls="full"
+                                disableInteraction={disableInteraction}
+                            />
+                        )}
+                        {isLoaded && project.has_boards && (
+                            <KiCanvasBoardApp
+                                controls="full"
+                                disableInteraction={disableInteraction}
+                            />
+                        )}
                         {children}
                     </main>
                 </App>
