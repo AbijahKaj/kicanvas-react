@@ -9,6 +9,19 @@ import "./base/livereload";
 import { KiCanvasEmbedElement } from "./kicanvas/elements/kicanvas-embed";
 import { KiCanvasShellElement } from "./kicanvas/elements/kicanvas-shell";
 
+// Export main React components first (recommended API)
+export { 
+    KiCanvasEmbed, 
+    KiCanvasShell,
+    KiCanvasSource,
+    App,
+    Button,
+    Icon,
+    Panel,
+    Menu
+} from "./react";
+
+// Export legacy web components for backward compatibility
 export { KiCanvasEmbedElement, KiCanvasShellElement };
 
 // ========================================
@@ -54,6 +67,15 @@ export { Logger } from "./base/log";
 // ========================================
 export { CustomElement } from "./base/web-components/custom-element";
 export { KCUIElement } from "./kc-ui/element";
+
+// ========================================
+// React Components & Main Application Components (NEW)
+// ========================================
+export * from "./react";
+
+// ========================================
+// Legacy Web Components (maintained for backward compatibility)
+// ========================================
 
 // ========================================
 // Main UI Components (already registered globally)

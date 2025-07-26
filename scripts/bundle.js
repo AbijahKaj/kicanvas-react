@@ -20,6 +20,8 @@ export async function bundle(options = {}) {
         sourcemap: false,
         loader: {
             ".js": "ts",
+            ".tsx": "tsx",
+            ".jsx": "jsx",
             ".glsl": "text",
             ".css": "text",
             ".svg": "text",
