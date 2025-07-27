@@ -11,8 +11,29 @@
     </head>
 
     <body>
-        <kc-kicanvas-shell id="kicanvas"></kc-kicanvas-shell>
-    </body>
+        <div id="kicanvas-root"></div>
 
-    <script type="module" src="kicanvas/kicanvas.js"></script>
+        <!-- Load kicanvas which now includes React -->
+        <script type="module" src="kicanvas/kicanvas.js"></script>
+
+        <!-- Load our app script -->
+        <script type="module">
+            // Import React and KiCanvasShell from the bundled kicanvas
+            import { React, createRoot } from "./kicanvas/kicanvas.js";
+            import { KiCanvasShell } from "./kicanvas/kicanvas.js";
+
+            const { createElement: h } = React;
+
+            // Create the KiCanvasShell React component
+            const App = () => {
+                return h(KiCanvasShell, {
+                    style: { width: "100vw", height: "100vh" },
+                });
+            };
+
+            // Use createRoot from the bundled React
+            const root = createRoot(document.getElementById("kicanvas-root"));
+            root.render(h(App));
+        </script>
+    </body>
 </html>

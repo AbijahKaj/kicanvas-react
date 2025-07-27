@@ -31,7 +31,7 @@ svg {
 
 /* Styles for KiCanvas */
 
-kc-kicanvas-shell {
+#kicanvas-root {
     width: 100%;
     height: 100vh;
     overflow: hidden;
