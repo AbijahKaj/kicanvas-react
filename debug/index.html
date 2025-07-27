@@ -1,4 +1,17 @@
-<!doctype html><html lang="en"><head><link rel="stylesheet" href="./style.css"/></head><body><div id="kicanvas-root"></div><script type="module" src="kicanvas/kicanvas.js"></script><script type="module">// Import React and KiCanvasShell from the bundled kicanvas
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="./style.css" />
+    </head>
+    <body>
+        <div id="kicanvas-root"></div>
+
+        <!-- Load kicanvas which now includes React -->
+        <script type="module" src="kicanvas/kicanvas.js"></script>
+
+        <!-- Load our app script -->
+        <script type="module">
+            // Import React and KiCanvasShell from the bundled kicanvas
             import { React, createRoot } from "./kicanvas/kicanvas.js";
             import { KiCanvasShell } from "./kicanvas/kicanvas.js";
 
@@ -13,4 +26,7 @@
 
             // Use createRoot from the bundled React
             const root = createRoot(document.getElementById("kicanvas-root"));
-            root.render(h(App));</script></body></html>
+            root.render(h(App));
+        </script>
+    </body>
+</html>
