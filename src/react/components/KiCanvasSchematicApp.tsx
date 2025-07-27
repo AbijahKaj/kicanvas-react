@@ -32,6 +32,7 @@ const schematicAppStyles = `
         height: 100%;
         display: flex;
         flex-direction: column;
+        background-color: #f0f0f0; /* Add background for debugging */
     }
 
     .kc-schematic-app.hidden {
@@ -42,12 +43,15 @@ const schematicAppStyles = `
         flex: 1;
         position: relative;
         overflow: hidden;
+        background-color: #e0e0e0; /* Add background for debugging */
     }
 
     .viewer-canvas {
         width: 100%;
         height: 100%;
         display: block;
+        background-color: white; /* Add background for debugging */
+        border: 2px solid #ff0000; /* Add red border for debugging */
     }
 `;
 
@@ -69,13 +73,23 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
     const { project } = useKiCanvasContext();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const viewerRef = useRef<SchematicViewer | null>(null);
-    const [isHidden, setIsHidden] = useState(true);
+    const [isHidden, setIsHidden] = useState(false); // Changed from true to false for debugging
 
     // Initialize viewer when canvas is ready
     useEffect(() => {
-        if (!canvasRef.current || !project) return;
+        console.log(
+            "Initializing viewer - canvas ref:",
+            canvasRef.current,
+            "project:",
+            project,
+        );
+        if (!canvasRef.current || !project) {
+            console.log("Cannot initialize viewer - missing canvas or project");
+            return;
+        }
 
         const canvas = canvasRef.current;
+        console.log("Canvas element:", canvas);
 
         // Get theme from project/context - using a basic theme for now
         const theme = project.preferences?.theme?.schematic || {
@@ -117,8 +131,10 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
         };
 
         const viewer = new SchematicViewer(canvas, !disableInteraction, theme);
+        console.log("Created SchematicViewer:", viewer);
 
         viewerRef.current = viewer;
+        console.log("Set viewer ref:", viewerRef.current);
         onViewerReady?.(viewer);
 
         // Setup viewer selection handling
@@ -149,6 +165,7 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
         viewer.addEventListener(KiCanvasSelectEvent.type, handleSelect);
 
         return () => {
+            console.log("Cleaning up viewer");
             viewer.removeEventListener(KiCanvasSelectEvent.type, handleSelect);
             viewer.dispose?.();
         };
@@ -156,22 +173,39 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
 
     // Handle project page changes
     useEffect(() => {
-        if (!project) return;
+        if (!project) {
+            console.log("No project available");
+            return;
+        }
+
+        console.log("Project loaded:", project);
+        console.log("Has schematics:", project.has_schematics);
+        console.log("Has boards:", project.has_boards);
+        console.log("Root schematic page:", project.root_schematic_page);
+        console.log("Active page:", project.active_page);
 
         const handleProjectChange = () => {
             const page = project.active_page;
+            console.log("Project changed, active page:", page);
             if (page && canLoad(page)) {
                 loadPage(page);
             } else {
+                console.log("No valid page to load, hiding app");
                 setIsHidden(true);
             }
         };
 
         // Load initial page if available - look for any schematic page
         const allPages = Array.from(project.pages()) as ProjectPage[];
+        console.log("All pages:", allPages);
+
         const schematicPage = allPages.find((page) => canLoad(page));
+        console.log("Found schematic page:", schematicPage);
+
         if (schematicPage) {
             loadPage(schematicPage);
+        } else {
+            console.log("No schematic page found");
         }
 
         // Listen for project changes
@@ -187,10 +221,19 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
     };
 
     const loadPage = useCallback(async (page: ProjectPage) => {
-        if (!viewerRef.current || !canLoad(page)) return;
+        console.log("Loading page:", page);
+        console.log("Viewer ref:", viewerRef.current);
+        console.log("Can load:", canLoad(page));
+
+        if (!viewerRef.current || !canLoad(page)) {
+            console.log("Cannot load page - missing viewer or invalid page");
+            return;
+        }
 
         try {
+            console.log("Calling viewer.load with:", page.document);
             await viewerRef.current.load(page.document as KicadSch);
+            console.log("Viewer loaded successfully");
             // Only show the app once the viewer has successfully loaded
             setIsHidden(false);
         } catch (error) {
