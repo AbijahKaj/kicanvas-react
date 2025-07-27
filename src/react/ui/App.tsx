@@ -4,8 +4,8 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React from 'react';
-import { BaseComponent } from '../base/BaseComponent';
+import React from "react";
+import { BaseComponent } from "../base/BaseComponent";
 
 export interface AppProps {
     children?: React.ReactNode;
@@ -17,10 +17,15 @@ export interface AppProps {
  * App is the parent container for all UI elements.
  * React equivalent of kc-ui-app.
  */
-export const App: React.FC<AppProps> = ({ children, className, style, ...props }) => {
+export const App: React.FC<AppProps> = ({
+    children,
+    className,
+    style,
+    ...props
+}) => {
     return (
         <BaseComponent
-            className={`kc-ui-app${className ? ` ${className}` : ''}`}
+            className={`kc-ui-app${className ? ` ${className}` : ""}`}
             style={style}
             {...props}>
             {children}

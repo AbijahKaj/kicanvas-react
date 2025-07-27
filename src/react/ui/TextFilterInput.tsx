@@ -4,9 +4,9 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useCallback, useRef } from 'react';
-import { BaseComponent } from '../base/BaseComponent';
-import { Icon } from './Icon';
+import React, { useState, useCallback, useRef } from "react";
+import { BaseComponent } from "../base/BaseComponent";
+import { Icon } from "./Icon";
 
 export interface TextFilterInputProps {
     name?: string;
@@ -72,45 +72,56 @@ const textFilterInputStyles = `
 `;
 
 export const TextFilterInput: React.FC<TextFilterInputProps> = ({
-    name = 'search',
-    placeholder = 'search',
-    value: propValue = '',
+    name = "search",
+    placeholder = "search",
+    value: propValue = "",
     className,
     style,
     onInput,
-    onChange
+    onChange,
 }) => {
     const [value, setValue] = useState(propValue);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const handleInput = useCallback((e: React.FormEvent<HTMLInputElement>) => {
-        const newValue = e.currentTarget.value;
-        setValue(newValue);
-        onInput?.(newValue);
-    }, [onInput]);
+    const handleInput = useCallback(
+        (e: React.FormEvent<HTMLInputElement>) => {
+            const newValue = e.currentTarget.value;
+            setValue(newValue);
+            onInput?.(newValue);
+        },
+        [onInput],
+    );
 
-    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.currentTarget.value;
-        onChange?.(newValue);
-    }, [onChange]);
+    const handleChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const newValue = e.currentTarget.value;
+            onChange?.(newValue);
+        },
+        [onChange],
+    );
 
-    const handleClear = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setValue('');
-        if (inputRef.current) {
-            inputRef.current.focus();
-            // Trigger input event to match web component behavior
-            const inputEvent = new Event('input', { bubbles: true });
-            inputRef.current.dispatchEvent(inputEvent);
-        }
-        onInput?.('');
-        onChange?.('');
-    }, [onInput, onChange]);
+    const handleClear = useCallback(
+        (e: React.MouseEvent<HTMLButtonElement>) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setValue("");
+            if (inputRef.current) {
+                inputRef.current.focus();
+                // Trigger input event to match web component behavior
+                const inputEvent = new Event("input", { bubbles: true });
+                inputRef.current.dispatchEvent(inputEvent);
+            }
+            onInput?.("");
+            onChange?.("");
+        },
+        [onInput, onChange],
+    );
 
     return (
         <BaseComponent styles={textFilterInputStyles}>
-            <div className={`kc-ui-text-filter-input ${className || ''}`} style={style}>
+            <div
+                className={`kc-ui-text-filter-input ${className || ""}`}
+                style={style}>
                 <Icon className="before">search</Icon>
                 <input
                     ref={inputRef}

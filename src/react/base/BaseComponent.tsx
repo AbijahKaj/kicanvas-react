@@ -4,8 +4,8 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { createContext, useContext } from 'react';
-import type { ReactNode } from 'react';
+import React, { createContext, useContext } from "react";
+import type { ReactNode } from "react";
 
 // Context for providing shared services/data (like the project)
 export interface KiCanvasContextType {
@@ -23,7 +23,10 @@ export interface KiCanvasProviderProps {
     value: KiCanvasContextType;
 }
 
-export const KiCanvasProvider: React.FC<KiCanvasProviderProps> = ({ children, value }) => {
+export const KiCanvasProvider: React.FC<KiCanvasProviderProps> = ({
+    children,
+    value,
+}) => {
     return (
         <KiCanvasContext.Provider value={value}>
             {children}
@@ -75,9 +78,12 @@ const commonStyles = `
 `;
 
 // Inject common styles into document head (similar to what web components did)
-if (typeof document !== 'undefined' && !document.getElementById('kc-ui-common-styles')) {
-    const style = document.createElement('style');
-    style.id = 'kc-ui-common-styles';
+if (
+    typeof document !== "undefined" &&
+    !document.getElementById("kc-ui-common-styles")
+) {
+    const style = document.createElement("style");
+    style.id = "kc-ui-common-styles";
     style.textContent = commonStyles;
     document.head.appendChild(style);
 }
@@ -92,25 +98,24 @@ export interface BaseComponentProps {
 /**
  * Base component that provides common functionality equivalent to KCUIElement
  */
-export const BaseComponent = React.forwardRef<HTMLDivElement, BaseComponentProps>(({ 
-    children, 
-    className = '', 
-    style = {},
-    styles,
-    ...props 
-}, ref) => {
+export const BaseComponent = React.forwardRef<
+    HTMLDivElement,
+    BaseComponentProps
+>(({ children, className = "", style = {}, styles, ...props }, ref) => {
     const combinedClassName = `kc-ui ${className}`.trim();
-    
+
     // Inject component-specific styles if provided
     React.useEffect(() => {
         if (!styles) return;
 
-        const styleId = `kc-component-styles-${Math.random().toString(36).substr(2, 9)}`;
-        const styleElement = document.createElement('style');
+        const styleId = `kc-component-styles-${Math.random()
+            .toString(36)
+            .substr(2, 9)}`;
+        const styleElement = document.createElement("style");
         styleElement.id = styleId;
         styleElement.textContent = styles;
         document.head.appendChild(styleElement);
-        
+
         // Cleanup function to remove styles when component unmounts
         return () => {
             const existingStyle = document.getElementById(styleId);
@@ -119,7 +124,7 @@ export const BaseComponent = React.forwardRef<HTMLDivElement, BaseComponentProps
             }
         };
     }, [styles]);
-    
+
     return (
         <div className={combinedClassName} style={style} ref={ref} {...props}>
             {children}

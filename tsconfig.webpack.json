@@ -5,4 +5,4 @@
         "noEmit": false,
         "outDir": "./debug/kicanvas"
     }
-} 
+}

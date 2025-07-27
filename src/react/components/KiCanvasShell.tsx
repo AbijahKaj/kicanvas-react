@@ -4,12 +4,12 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { BaseComponent, KiCanvasProvider } from '../base/BaseComponent';
-import { App } from '../ui/App';
-import { Project } from '../../kicanvas/project';
-import { KiCanvasSchematicApp } from './KiCanvasSchematicApp';
-import { KiCanvasBoardApp } from './KiCanvasBoardApp';
+import React, { useState, useEffect, useCallback } from "react";
+import { BaseComponent, KiCanvasProvider } from "../base/BaseComponent";
+import { App } from "../ui/App";
+import { Project } from "../../kicanvas/project";
+import { KiCanvasSchematicApp } from "./KiCanvasSchematicApp";
+import { KiCanvasBoardApp } from "./KiCanvasBoardApp";
 
 export interface KiCanvasShellProps {
     src?: string;
@@ -133,35 +133,40 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
 }) => {
     const [project] = useState(() => new Project());
     const [isLoaded, setIsLoaded] = useState(loaded);
-    const [linkValue, setLinkValue] = useState('');
+    const [linkValue, setLinkValue] = useState("");
     const [loadError, setLoadError] = useState<Error | null>(null);
     const [, forceUpdate] = useState({}); // Used to force re-renders when project state changes
 
-    const setupProject = useCallback(async (vfs: any) => {
-        setIsLoaded(false);
-        setLoadError(null);
+    const setupProject = useCallback(
+        async (vfs: any) => {
+            setIsLoaded(false);
+            setLoadError(null);
 
-        try {
-            await project.load?.(vfs);
-            if (project.set_active_page && project.first_page) {
-                project.set_active_page(project.first_page);
+            try {
+                await project.load?.(vfs);
+                if (project.set_active_page && project.first_page) {
+                    project.set_active_page(project.first_page);
+                }
+                setIsLoaded(true);
+                forceUpdate({}); // Force re-render after project loads
+                onProjectLoaded?.(project);
+            } catch (error) {
+                const err = error as Error;
+                console.error("Failed to load project:", err);
+                setLoadError(err);
+                onProjectError?.(err);
             }
-            setIsLoaded(true);
-            forceUpdate({}); // Force re-render after project loads
-            onProjectLoaded?.(project);
-        } catch (error) {
-            const err = error as Error;
-            console.error('Failed to load project:', err);
-            setLoadError(err);
-            onProjectError?.(err);
-        }
-    }, [project, onProjectLoaded, onProjectError]);
+        },
+        [project, onProjectLoaded, onProjectError],
+    );
 
     const handleReload = useCallback(() => {
         if (src) {
             // Reload from src
             (async () => {
-                const { FetchFileSystem } = await import('../../kicanvas/services/vfs');
+                const { FetchFileSystem } = await import(
+                    "../../kicanvas/services/vfs"
+                );
                 const vfs = new FetchFileSystem([src]);
                 await setupProject(vfs);
             })();
@@ -173,20 +178,24 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
 
     useEffect(() => {
         let cleanupDropTarget: (() => void) | undefined;
-        
+
         const initialize = async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const githubPaths = urlParams.getAll('github');
+            const githubPaths = urlParams.getAll("github");
 
             if (src) {
-                const { FetchFileSystem } = await import('../../kicanvas/services/vfs');
+                const { FetchFileSystem } = await import(
+                    "../../kicanvas/services/vfs"
+                );
                 const vfs = new FetchFileSystem([src]);
                 await setupProject(vfs);
                 return;
             }
 
             if (githubPaths.length) {
-                const { GitHubFileSystem } = await import('../../kicanvas/services/github-vfs');
+                const { GitHubFileSystem } = await import(
+                    "../../kicanvas/services/github-vfs"
+                );
                 const vfs = await GitHubFileSystem.fromURLs(...githubPaths);
                 await setupProject(vfs);
                 return;
@@ -195,9 +204,9 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
             // Set up drag and drop for files
             cleanupDropTarget = setupDropTarget();
         };
-        
+
         initialize();
-        
+
         return () => {
             cleanupDropTarget?.();
         };
@@ -213,12 +222,12 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
             forceUpdate({}); // Force re-render when project changes
         };
 
-        project.addEventListener?.('load', handleProjectLoad);
-        project.addEventListener?.('change', handleProjectChange);
+        project.addEventListener?.("load", handleProjectLoad);
+        project.addEventListener?.("change", handleProjectChange);
 
         return () => {
-            project.removeEventListener?.('load', handleProjectLoad);
-            project.removeEventListener?.('change', handleProjectChange);
+            project.removeEventListener?.("load", handleProjectLoad);
+            project.removeEventListener?.("change", handleProjectChange);
         };
     }, [project]);
 
@@ -237,61 +246,65 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
             if (!files || files.length === 0) return;
 
             try {
-                const { DragDropFileSystem } = await import('../../kicanvas/services/vfs');
+                const { DragDropFileSystem } = await import(
+                    "../../kicanvas/services/vfs"
+                );
                 const vfs = new DragDropFileSystem(files);
                 await setupProject(vfs);
             } catch (error) {
-                console.error('Failed to load dropped files:', error);
+                console.error("Failed to load dropped files:", error);
                 setLoadError(error as Error);
             }
         };
 
         // Add event listeners
-        document.addEventListener('dragover', handleDragOver);
-        document.addEventListener('drop', handleDrop);
+        document.addEventListener("dragover", handleDragOver);
+        document.addEventListener("drop", handleDrop);
 
         // Return cleanup function
         return () => {
-            document.removeEventListener('dragover', handleDragOver);
-            document.removeEventListener('drop', handleDrop);
+            document.removeEventListener("dragover", handleDragOver);
+            document.removeEventListener("drop", handleDrop);
         };
     };
 
-    const handleLinkInput = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const link = e.target.value;
-        setLinkValue(link);
+    const handleLinkInput = useCallback(
+        async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const link = e.target.value;
+            setLinkValue(link);
 
-        if (!link) return;
+            if (!link) return;
 
-        // Check if it's a GitHub URL
-        const { GitHub } = await import('../../kicanvas/services/github');
-        if (!GitHub.parse_url?.(link)) {
-            return;
-        }
+            // Check if it's a GitHub URL
+            const { GitHub } = await import("../../kicanvas/services/github");
+            if (!GitHub.parse_url?.(link)) {
+                return;
+            }
 
-        try {
-            const { GitHubFileSystem } = await import('../../kicanvas/services/github-vfs');
-            const vfs = await GitHubFileSystem.fromURLs(link);
-            await setupProject(vfs);
+            try {
+                const { GitHubFileSystem } = await import(
+                    "../../kicanvas/services/github-vfs"
+                );
+                const vfs = await GitHubFileSystem.fromURLs(link);
+                await setupProject(vfs);
 
-            // Update URL
-            const location = new URL(window.location.href);
-            location.searchParams.set('github', link);
-            window.history.pushState(null, '', location);
-        } catch (error) {
-            console.error('Failed to load from GitHub:', error);
-        }
-    }, [setupProject]);
+                // Update URL
+                const location = new URL(window.location.href);
+                location.searchParams.set("github", link);
+                window.history.pushState(null, "", location);
+            } catch (error) {
+                console.error("Failed to load from GitHub:", error);
+            }
+        },
+        [setupProject],
+    );
 
     const contextValue = {
         project: project,
-        reload: handleReload
+        reload: handleReload,
     };
 
-    const classes = [
-        'kc-shell',
-        className
-    ].filter(Boolean).join(' ');
+    const classes = ["kc-shell", className].filter(Boolean).join(" ");
 
     const showOverlay = !isLoaded;
 
@@ -310,11 +323,17 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                                 KiCanvas
                             </h1>
                             <p>
-                                KiCanvas is an <strong>interactive</strong>, <strong>browser-based</strong> viewer for KiCAD schematics and boards. You can learn more from the{' '}
-                                <a href="https://kicanvas.org/home" target="_blank" rel="noopener noreferrer">
+                                KiCanvas is an <strong>interactive</strong>,{" "}
+                                <strong>browser-based</strong> viewer for KiCAD
+                                schematics and boards. You can learn more from
+                                the{" "}
+                                <a
+                                    href="https://kicanvas.org/home"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     docs
                                 </a>
-                                . It's in <strong>alpha</strong> so please{' '}
+                                . It's in <strong>alpha</strong> so please{" "}
                                 <a
                                     href="https://github.com/theacodes/kicanvas/issues/new/choose"
                                     target="_blank"
@@ -331,37 +350,57 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                                 autoFocus
                             />
                             <p>or drag & drop your KiCAD files</p>
-                            {loadError && <p style={{color: 'red'}}>Error: {loadError.message}</p>}
+                            {loadError && (
+                                <p style={{ color: "red" }}>
+                                    Error: {loadError.message}
+                                </p>
+                            )}
                             <p className="note">
-                                KiCanvas is{' '}
+                                KiCanvas is{" "}
                                 <a
                                     href="https://github.com/theacodes/kicanvas"
                                     target="_blank"
                                     rel="noopener noreferrer">
                                     free & open source
-                                </a>{' '}
-                                and supported by{' '}
+                                </a>{" "}
+                                and supported by{" "}
                                 <a href="https://github.com/theacodes/kicanvas#special-thanks">
                                     community donations
-                                </a>{' '}
-                                with significant support from{' '}
-                                <a href="https://partsbox.com/" target="_blank" rel="noopener noreferrer">
+                                </a>{" "}
+                                with significant support from{" "}
+                                <a
+                                    href="https://partsbox.com/"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     PartsBox
                                 </a>
-                                ,{' '}
-                                <a href="https://blues.io/" target="_blank" rel="noopener noreferrer">
+                                ,{" "}
+                                <a
+                                    href="https://blues.io/"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     Blues
                                 </a>
-                                ,{' '}
-                                <a href="https://blog.mithis.net/" target="_blank" rel="noopener noreferrer">
+                                ,{" "}
+                                <a
+                                    href="https://blog.mithis.net/"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     Mithro
                                 </a>
-                                ,{' '}
-                                <a href="https://github.com/jeremysf">Jeremy Gordon</a>, &{' '}
-                                <a href="https://github.com/jamesneal" target="_blank" rel="noopener noreferrer">
+                                ,{" "}
+                                <a href="https://github.com/jeremysf">
+                                    Jeremy Gordon
+                                </a>
+                                , &{" "}
+                                <a
+                                    href="https://github.com/jamesneal"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     James Neal
                                 </a>
-                                . KiCanvas runs entirely within your browser, so your files don't ever leave your machine.
+                                . KiCanvas runs entirely within your browser, so
+                                your files don't ever leave your machine.
                             </p>
                             <p className="github">
                                 <a
@@ -369,7 +408,10 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     title="Visit on GitHub">
-                                    <img src="images/github-mark-white.svg" alt="GitHub" />
+                                    <img
+                                        src="images/github-mark-white.svg"
+                                        alt="GitHub"
+                                    />
                                 </a>
                             </p>
                         </section>

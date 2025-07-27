@@ -4,14 +4,14 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { BaseComponent } from '../base/BaseComponent';
-import { Button } from './Button';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { BaseComponent } from "../base/BaseComponent";
+import { Button } from "./Button";
 
 export interface ActivityData {
     name: string;
     icon: string;
-    buttonLocation?: 'top' | 'bottom';
+    buttonLocation?: "top" | "bottom";
     content: React.ReactNode;
 }
 
@@ -100,16 +100,18 @@ const activitySideBarStyles = `
  * ActivitySideBar is a VSCode-style side bar with an action bar with icons
  * and a panel with various activities. React equivalent of kc-ui-activity-side-bar.
  */
-export const ActivitySideBar: React.FC<ActivitySideBarProps> = ({ 
-    activities, 
+export const ActivitySideBar: React.FC<ActivitySideBarProps> = ({
+    activities,
     collapsed = false,
     onActivityChange,
-    className, 
-    style, 
-    ...props 
+    className,
+    style,
+    ...props
 }) => {
     const [currentActivity, setCurrentActivity] = useState<string | null>(
-        !collapsed && activities.length > 0 ? (activities[0]?.name.toLowerCase() || null) : null
+        !collapsed && activities.length > 0
+            ? activities[0]?.name.toLowerCase() || null
+            : null,
     );
     const [isCollapsed, setIsCollapsed] = useState(collapsed);
     const activitiesContainerRef = useRef<HTMLDivElement>(null);
@@ -131,22 +133,29 @@ export const ActivitySideBar: React.FC<ActivitySideBarProps> = ({
         }
     }, [currentActivity, onActivityChange]);
 
-    const handleActivityClick = useCallback((activityName: string) => {
-        const normalizedName = activityName.toLowerCase();
-        
-        if (currentActivity === normalizedName) {
-            // Clicking on the selected activity will deselect it
-            setCurrentActivity(null);
-            setIsCollapsed(true);
-        } else {
-            setCurrentActivity(normalizedName);
-            setIsCollapsed(false);
-        }
-    }, [currentActivity]);
+    const handleActivityClick = useCallback(
+        (activityName: string) => {
+            const normalizedName = activityName.toLowerCase();
+
+            if (currentActivity === normalizedName) {
+                // Clicking on the selected activity will deselect it
+                setCurrentActivity(null);
+                setIsCollapsed(true);
+            } else {
+                setCurrentActivity(normalizedName);
+                setIsCollapsed(false);
+            }
+        },
+        [currentActivity],
+    );
 
     // Separate activities by button location
-    const topActivities = activities.filter(a => a.buttonLocation !== 'bottom');
-    const bottomActivities = activities.filter(a => a.buttonLocation === 'bottom');
+    const topActivities = activities.filter(
+        (a) => a.buttonLocation !== "bottom",
+    );
+    const bottomActivities = activities.filter(
+        (a) => a.buttonLocation === "bottom",
+    );
 
     const renderButtons = (activitiesToRender: ActivityData[]) => {
         return activitiesToRender.map((activity) => (
@@ -162,18 +171,22 @@ export const ActivitySideBar: React.FC<ActivitySideBarProps> = ({
     };
 
     const classes = [
-        'kc-ui-activity-side-bar',
-        isCollapsed && 'collapsed',
-        className
-    ].filter(Boolean).join(' ');
+        "kc-ui-activity-side-bar",
+        isCollapsed && "collapsed",
+        className,
+    ]
+        .filter(Boolean)
+        .join(" ");
 
-    const containerStyle = isCollapsed ? {
-        width: 'unset',
-        minWidth: 'unset',
-        maxWidth: ''
-    } : {};
+    const containerStyle = isCollapsed
+        ? {
+              width: "unset",
+              minWidth: "unset",
+              maxWidth: "",
+          }
+        : {};
 
-    const activitiesStyle = isCollapsed ? { width: '0px' } : {};
+    const activitiesStyle = isCollapsed ? { width: "0px" } : {};
 
     return (
         <BaseComponent
@@ -182,21 +195,21 @@ export const ActivitySideBar: React.FC<ActivitySideBarProps> = ({
             styles={activitySideBarStyles}
             {...props}>
             <div className="bar">
-                <div className="start">
-                    {renderButtons(topActivities)}
-                </div>
-                <div className="end">
-                    {renderButtons(bottomActivities)}
-                </div>
+                <div className="start">{renderButtons(topActivities)}</div>
+                <div className="end">{renderButtons(bottomActivities)}</div>
             </div>
-            <div 
-                className="activities" 
+            <div
+                className="activities"
                 ref={activitiesContainerRef}
                 style={activitiesStyle}>
                 {activities.map((activity) => (
                     <div
                         key={activity.name}
-                        className={`activity-content${currentActivity === activity.name.toLowerCase() ? ' active' : ''}`}>
+                        className={`activity-content${
+                            currentActivity === activity.name.toLowerCase()
+                                ? " active"
+                                : ""
+                        }`}>
                         {activity.content}
                     </div>
                 ))}

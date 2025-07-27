@@ -4,8 +4,8 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useEffect, useRef, useState } from 'react';
-import { BaseComponent } from '../base/BaseComponent';
+import React, { useEffect, useRef, useState } from "react";
+import { BaseComponent } from "../base/BaseComponent";
 
 export interface FocusOverlayProps {
     children?: React.ReactNode;
@@ -77,11 +77,11 @@ const focusOverlayStyles = `
  * FocusOverlay shows an overlay over its siblings until the user clicks within.
  * React equivalent of kc-ui-focus-overlay.
  */
-export const FocusOverlay: React.FC<FocusOverlayProps> = ({ 
-    children, 
-    className, 
-    style, 
-    ...props 
+export const FocusOverlay: React.FC<FocusOverlayProps> = ({
+    children,
+    className,
+    style,
+    ...props
 }) => {
     const [hasFocus, setHasFocus] = useState(false);
     const overlayRef = useRef<HTMLDivElement>(null);
@@ -119,21 +119,19 @@ export const FocusOverlay: React.FC<FocusOverlayProps> = ({
         });
 
         intersectionObserver.observe(overlayElement);
-        overlayElement.addEventListener('click', handleClick);
-        document.addEventListener('click', handleDocumentClick);
+        overlayElement.addEventListener("click", handleClick);
+        document.addEventListener("click", handleDocumentClick);
 
         return () => {
             intersectionObserver.disconnect();
-            overlayElement.removeEventListener('click', handleClick);
-            document.removeEventListener('click', handleDocumentClick);
+            overlayElement.removeEventListener("click", handleClick);
+            document.removeEventListener("click", handleDocumentClick);
         };
     }, []);
 
-    const classes = [
-        'kc-ui-focus-overlay',
-        hasFocus && 'has-focus',
-        className
-    ].filter(Boolean).join(' ');
+    const classes = ["kc-ui-focus-overlay", hasFocus && "has-focus", className]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <BaseComponent

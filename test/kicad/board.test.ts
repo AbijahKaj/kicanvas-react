@@ -686,7 +686,11 @@ suite("kicad.board.KicadPCB(): board parsing", function () {
         // Test Via with UUID
         const via = pcb.vias[0];
         assert.deepInclude(via, {
-            at: { position: { x: 84.85, y: 64.9 }, rotation: 0, unlocked: false },
+            at: {
+                position: { x: 84.85, y: 64.9 },
+                rotation: 0,
+                unlocked: false,
+            },
             size: 0.45,
             drill: 0.3,
             layers: ["F.Cu", "B.Cu"],

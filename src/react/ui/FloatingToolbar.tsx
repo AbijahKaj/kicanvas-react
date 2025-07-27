@@ -4,14 +4,14 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React from 'react';
-import { BaseComponent } from '../base/BaseComponent';
+import React from "react";
+import { BaseComponent } from "../base/BaseComponent";
 
 export interface FloatingToolbarProps {
     children?: React.ReactNode;
     left?: React.ReactNode;
     right?: React.ReactNode;
-    location?: 'top' | 'bottom';
+    location?: "top" | "bottom";
     className?: string;
     style?: React.CSSProperties;
 }
@@ -62,20 +62,22 @@ const floatingToolbarStyles = `
  * FloatingToolbar is a toolbar that presents its elements on top of another element.
  * React equivalent of kc-ui-floating-toolbar.
  */
-export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ 
+export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     children,
     left,
     right,
-    location = 'top',
-    className, 
-    style, 
-    ...props 
+    location = "top",
+    className,
+    style,
+    ...props
 }) => {
     const classes = [
-        'kc-ui-floating-toolbar',
+        "kc-ui-floating-toolbar",
         `location-${location}`,
-        className
-    ].filter(Boolean).join(' ');
+        className,
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <BaseComponent
@@ -83,12 +85,8 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             style={style}
             styles={floatingToolbarStyles}
             {...props}>
-            <div className="left-content">
-                {left || children}
-            </div>
-            <div className="right-content">
-                {right}
-            </div>
+            <div className="left-content">{left || children}</div>
+            <div className="right-content">{right}</div>
         </BaseComponent>
     );
 };

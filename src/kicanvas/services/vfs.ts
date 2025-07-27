@@ -123,7 +123,7 @@ export class DragDropFileSystem extends VirtualFileSystem {
 
     constructor(fileList: FileList | File[]) {
         super();
-        
+
         const files = Array.from(fileList);
         for (const file of files) {
             this.files.set(file.name, file);
