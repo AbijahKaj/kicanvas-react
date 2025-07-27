@@ -123,12 +123,28 @@ export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
 
             await project.load?.(vfs);
 
+            console.log("Project loaded successfully");
+            console.log("Project has_schematics:", project.has_schematics);
+            console.log("Project has_boards:", project.has_boards);
+            console.log(
+                "Project root_schematic_page:",
+                project.root_schematic_page,
+            );
+
             setIsLoaded(true);
             onProjectLoaded?.(project);
 
             // Set active page
             if (project.set_active_page && project.root_schematic_page) {
+                console.log(
+                    "Setting active page to:",
+                    project.root_schematic_page,
+                );
                 project.set_active_page(project.root_schematic_page);
+            } else {
+                console.log(
+                    "Cannot set active page - missing set_active_page or root_schematic_page",
+                );
             }
         } catch (error) {
             const err = error as Error;
@@ -199,20 +215,29 @@ export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
                 <main>
                     {/* React components only - no web components */}
                     {project.has_schematics && (
-                        <KiCanvasSchematicApp
-                            controls={controls}
-                            controlslist={controlslist}
-                            sidebarCollapsed={sidebarCollapsed}
-                            disableInteraction={disableInteraction}
-                        />
+                        <>
+                            {console.log("Rendering KiCanvasSchematicApp")}
+                            <KiCanvasSchematicApp
+                                controls={controls}
+                                controlslist={controlslist}
+                                sidebarCollapsed={sidebarCollapsed}
+                                disableInteraction={disableInteraction}
+                            />
+                        </>
                     )}
                     {project.has_boards && (
-                        <KiCanvasBoardApp
-                            controls={controls}
-                            controlslist={controlslist}
-                            sidebarCollapsed={sidebarCollapsed}
-                            disableInteraction={disableInteraction}
-                        />
+                        <>
+                            {console.log("Rendering KiCanvasBoardApp")}
+                            <KiCanvasBoardApp
+                                controls={controls}
+                                controlslist={controlslist}
+                                sidebarCollapsed={sidebarCollapsed}
+                                disableInteraction={disableInteraction}
+                            />
+                        </>
+                    )}
+                    {!project.has_schematics && !project.has_boards && (
+                        <div>No schematics or boards found in project</div>
                     )}
                     {showFocusOverlay && <FocusOverlay />}
                 </main>
