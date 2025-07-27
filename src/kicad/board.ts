@@ -154,6 +154,7 @@ export class LineSegment {
     net: number;
     locked = false;
     tstamp: string;
+    uuid: string;
 
     constructor(expr: Parseable) {
         /*
@@ -177,6 +178,7 @@ export class LineSegment {
                 P.pair("net", T.number),
                 P.atom("locked"),
                 P.pair("tstamp", T.string),
+                P.pair("uuid", T.string),
             ),
         );
     }
@@ -191,6 +193,7 @@ export class ArcSegment {
     net: number;
     locked = false;
     tstamp: string;
+    uuid: string;
 
     constructor(expr: Parseable) {
         /*
@@ -216,6 +219,7 @@ export class ArcSegment {
                 P.pair("net", T.number),
                 P.atom("locked"),
                 P.pair("tstamp", T.string),
+                P.pair("uuid", T.string),
             ),
         );
     }
@@ -233,6 +237,7 @@ export class Via {
     free = false;
     net: number;
     tstamp: string;
+    uuid: string;
 
     constructor(expr: Parseable) {
         Object.assign(
@@ -251,6 +256,7 @@ export class Via {
                 P.atom("remove_unused_layers"),
                 P.atom("keep_end_layers"),
                 P.pair("tstamp", T.string),
+                P.pair("uuid", T.string),
             ),
         );
     }
