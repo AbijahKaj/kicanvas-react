@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+    <head>
+        <title>KiCanvas Fix Test</title>
+        <script type="module" src="debug/kicanvas/kicanvas.js"></script>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: sans-serif;
+            }
+            #app {
+                width: 100vw;
+                height: 100vh;
+            }
+            .status {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                z-index: 1000;
+                max-width: 300px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app"></div>
+        <div class="status" id="status">Loading...</div>
+
+        <script type="module">
+            import {
+                React,
+                createRoot,
+                Project,
+                FetchFileSystem,
+                KiCanvasProvider,
+                KiCanvasSchematicApp,
+                KiCanvasBoardApp,
+            } from "./debug/kicanvas/kicanvas.js";
+
+            const status = document.getElementById("status");
+
+            function updateStatus(message) {
+                status.textContent = message;
+                console.log(message);
+            }
+
+            // Function to load files
+            async function loadFiles() {
+                updateStatus("Creating project...");
+                const project = new Project();
+
+                try {
+                    updateStatus("Creating virtual file system...");
+                    const files = ["example.kicad_sch", "example.kicad_pcb"];
+                    const vfs = new FetchFileSystem(files);
+                    
+                    updateStatus("Loading files...");
+                    await project.load(vfs);
+                    
+                    updateStatus(`Files loaded! Has schematics: ${project.has_schematics}, Has boards: ${project.has_boards}`);
+                    return project;
+                } catch (error) {
+                    updateStatus(`Error loading files: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            const TestApp = () => {
+                const [project, setProject] = React.useState(null);
+                
+                React.useEffect(() => {
+                    loadFiles().then(setProject).catch(console.error);
+                }, []);
+
+                if (!project) {
+                    return React.createElement("div", null, "Loading files...");
+                }
+
+                return React.createElement(
+                    KiCanvasProvider,
+                    { project },
+                    React.createElement("div", { style: { display: "flex", height: "100vh" } },
+                        React.createElement(KiCanvasSchematicApp, { 
+                            style: { flex: 1, border: "1px solid red" }
+                        }),
+                        React.createElement(KiCanvasBoardApp, { 
+                            style: { flex: 1, border: "1px solid blue" }
+                        })
+                    )
+                );
+            };
+
+            updateStatus("Creating React app...");
+            const root = createRoot(document.getElementById("app"));
+            root.render(React.createElement(TestApp));
+            updateStatus("React app created. Loading files...");
+        </script>
+    </body>
+</html>

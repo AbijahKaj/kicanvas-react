@@ -197,14 +197,14 @@ export const KiCanvasBoardApp: React.FC<KiCanvasBoardAppProps> = ({
     const loadPage = useCallback(async (page: ProjectPage) => {
         if (!viewerRef.current || !canLoad(page)) return;
 
-        // Show the app immediately, before trying to load viewer
-        setIsHidden(false);
-
         try {
             await viewerRef.current.load(page.document as KicadPCB);
+            // Only show the app once the viewer has successfully loaded
+            setIsHidden(false);
         } catch (error) {
             console.error("Failed to load board page:", error);
-            // Keep the app visible even on error so user can see something
+            // Keep app hidden on error
+            setIsHidden(true);
         }
     }, []);
 

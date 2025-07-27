@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+    <head>
+        <title>KiCanvas File Loading Test</title>
+        <script type="module" src="debug/kicanvas/kicanvas.js"></script>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: sans-serif;
+            }
+            #app {
+                width: 100vw;
+                height: 100vh;
+            }
+            .status {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                z-index: 1000;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app"></div>
+        <div class="status" id="status">Loading...</div>
+
+        <script type="module">
+            import {
+                React,
+                createRoot,
+                KiCanvasShell,
+            } from "./debug/kicanvas/kicanvas.js";
+
+            const status = document.getElementById("status");
+
+            function updateStatus(message) {
+                status.textContent = message;
+                console.log(message);
+            }
+
+            const TestApp = () => {
+                return React.createElement(KiCanvasShell, {
+                    onProjectLoaded: (project) => {
+                        updateStatus(
+                            `Project loaded successfully! Has schematics: ${project.has_schematics}, Has boards: ${project.has_boards}`,
+                        );
+                    },
+                    onProjectError: (error) => {
+                        updateStatus(`Project load error: ${error.message}`);
+                    },
+                });
+            };
+
+            updateStatus("Creating React app...");
+            const root = createRoot(document.getElementById("app"));
+            root.render(React.createElement(TestApp));
+            updateStatus("React app created. Ready for file testing.");
+        </script>
+    </body>
+</html>
