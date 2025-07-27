@@ -127,7 +127,6 @@ export class KCUIMenuElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-menu", KCUIMenuElement);
 
 export class KCUIMenuItemElement extends KCUIElement {
     static override styles = [
@@ -209,7 +208,6 @@ export class KCUIMenuItemElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-menu-item", KCUIMenuItemElement);
 
 export class KCUIMenuLabelElement extends KCUIElement {
     static override styles = [
@@ -231,4 +229,3 @@ export class KCUIMenuLabelElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-menu-label", KCUIMenuLabelElement);

@@ -97,4 +97,3 @@ export class KCUIResizerElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-resizer", KCUIResizerElement);

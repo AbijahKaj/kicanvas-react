@@ -133,4 +133,3 @@ export class KCUIDropdownElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-dropdown", KCUIDropdownElement);

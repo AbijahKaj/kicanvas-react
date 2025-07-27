@@ -63,8 +63,3 @@ export class KCUIFloatingToolbarElement extends KCUIElement {
         return html`<slot name="left"></slot><slot name="right"></slot>`;
     }
 }
-
-window.customElements.define(
-    "kc-ui-floating-toolbar",
-    KCUIFloatingToolbarElement,
-);

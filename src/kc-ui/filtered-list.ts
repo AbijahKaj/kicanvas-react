@@ -61,4 +61,3 @@ export class KCUIFilteredListElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-filtered-list", KCUIFilteredListElement);

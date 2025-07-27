@@ -199,4 +199,3 @@ export class KCUIRangeElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-range", KCUIRangeElement);

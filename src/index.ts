@@ -72,7 +72,7 @@ export * from "./viewers/schematic/viewer";
 // ========================================
 // File System & Services
 // ========================================
-export { VirtualFileSystem, FetchFileSystem } from "./kicanvas/services/vfs";
+export { VirtualFileSystem, FetchFileSystem, DragDropFileSystem } from "./kicanvas/services/vfs";
 export { GitHubFileSystem } from "./kicanvas/services/github-vfs";
 export { GitHub } from "./kicanvas/services/github";
 

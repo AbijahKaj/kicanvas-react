@@ -164,41 +164,76 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                 await setupProject(vfs);
             })();
         } else {
-            // Reload from URL params
-            initializeFromURL();
+            // Reload from URL params - simplified version
+            window.location.reload();
         }
-    }, [src, setupProject]);
-
-    const initializeFromURL = useCallback(async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const githubPaths = urlParams.getAll('github');
-
-        if (src) {
-            const { FetchFileSystem } = await import('../../kicanvas/services/vfs');
-            const vfs = new FetchFileSystem([src]);
-            await setupProject(vfs);
-            return;
-        }
-
-        if (githubPaths.length) {
-            const { GitHubFileSystem } = await import('../../kicanvas/services/github-vfs');
-            const vfs = await GitHubFileSystem.fromURLs(...githubPaths);
-            await setupProject(vfs);
-            return;
-        }
-
-        // Set up drag and drop for files
-        setupDropTarget();
     }, [src, setupProject]);
 
     useEffect(() => {
-        initializeFromURL();
-    }, [initializeFromURL]);
+        let cleanupDropTarget: (() => void) | undefined;
+        
+        const initialize = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const githubPaths = urlParams.getAll('github');
+
+            if (src) {
+                const { FetchFileSystem } = await import('../../kicanvas/services/vfs');
+                const vfs = new FetchFileSystem([src]);
+                await setupProject(vfs);
+                return;
+            }
+
+            if (githubPaths.length) {
+                const { GitHubFileSystem } = await import('../../kicanvas/services/github-vfs');
+                const vfs = await GitHubFileSystem.fromURLs(...githubPaths);
+                await setupProject(vfs);
+                return;
+            }
+
+            // Set up drag and drop for files
+            cleanupDropTarget = setupDropTarget();
+        };
+        
+        initialize();
+        
+        return () => {
+            cleanupDropTarget?.();
+        };
+    }, [src, setupProject]);
 
     const setupDropTarget = () => {
-        // In a real implementation, this would set up file drag/drop handling
-        // For now, we'll just show a placeholder
-        console.log('Drop target setup - file drag/drop would be implemented here');
+        // Set up drag and drop functionality for the document body
+        const handleDragOver = (e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
+
+        const handleDrop = async (e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const files = e.dataTransfer?.files;
+            if (!files || files.length === 0) return;
+
+            try {
+                const { DragDropFileSystem } = await import('../../kicanvas/services/vfs');
+                const vfs = new DragDropFileSystem(files);
+                await setupProject(vfs);
+            } catch (error) {
+                console.error('Failed to load dropped files:', error);
+                setLoadError(error as Error);
+            }
+        };
+
+        // Add event listeners
+        document.addEventListener('dragover', handleDragOver);
+        document.addEventListener('drop', handleDrop);
+
+        // Return cleanup function
+        return () => {
+            document.removeEventListener('dragover', handleDragOver);
+            document.removeEventListener('drop', handleDrop);
+        };
     };
 
     const handleLinkInput = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {

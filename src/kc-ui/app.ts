@@ -21,4 +21,3 @@ export class KCUIAppElement extends CustomElement {
     static override useShadowRoot = false;
 }
 
-window.customElements.define("kc-ui-app", KCUIAppElement);

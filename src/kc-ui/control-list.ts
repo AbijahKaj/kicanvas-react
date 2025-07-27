@@ -27,7 +27,6 @@ export class KCUIControlListElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-control-list", KCUIControlListElement);
 
 export class KCUIControlListItemElement extends KCUIElement {
     static override styles = [
@@ -67,8 +66,3 @@ export class KCUIControlListItemElement extends KCUIElement {
         return html`<slot></slot>`;
     }
 }
-
-window.customElements.define(
-    "kc-ui-control-list-item",
-    KCUIControlListItemElement,
-);

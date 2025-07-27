@@ -26,7 +26,6 @@ export class KCUIPropertyList extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-property-list", KCUIPropertyList);
 
 export class KCUIPropertyListItemElement extends KCUIElement {
     static override styles = [
@@ -70,8 +69,3 @@ export class KCUIPropertyListItemElement extends KCUIElement {
             ><span><slot></slot></span>`;
     }
 }
-
-window.customElements.define(
-    "kc-ui-property-list-item",
-    KCUIPropertyListItemElement,
-);

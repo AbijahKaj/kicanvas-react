@@ -48,7 +48,6 @@ export class KCUIView extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-view", KCUIView);
 
 /**
  * TODO
@@ -81,4 +80,3 @@ export class KCUISplitView extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-split-view", KCUISplitView);

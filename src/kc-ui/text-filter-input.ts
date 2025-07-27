@@ -99,8 +99,3 @@ export class KCUITextFilterInputElement extends KCUIElement {
             </button>`;
     }
 }
-
-window.customElements.define(
-    "kc-ui-text-filter-input",
-    KCUITextFilterInputElement,
-);

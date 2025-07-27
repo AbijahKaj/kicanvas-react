@@ -262,8 +262,3 @@ export class KCUIActivitySideBarElement extends KCUIElement {
         }
     }
 }
-
-window.customElements.define(
-    "kc-ui-activity-side-bar",
-    KCUIActivitySideBarElement,
-);

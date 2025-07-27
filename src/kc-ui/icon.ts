@@ -55,5 +55,3 @@ export class KCUIIconElement extends KCUIElement {
         }
     }
 }
-
-window.customElements.define("kc-ui-icon", KCUIIconElement);

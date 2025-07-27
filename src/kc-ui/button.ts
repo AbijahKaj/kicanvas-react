@@ -219,4 +219,3 @@ export class KCUIButtonElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-button", KCUIButtonElement);

@@ -38,7 +38,6 @@ export class KCUIPanelElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-panel", KCUIPanelElement);
 
 export class KCUIPanelTitleElement extends KCUIElement {
     static override styles = [
@@ -79,7 +78,6 @@ export class KCUIPanelTitleElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-panel-title", KCUIPanelTitleElement);
 
 export class KCUIPanelBodyElement extends KCUIElement {
     static override styles = [
@@ -106,7 +104,6 @@ export class KCUIPanelBodyElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-panel-body", KCUIPanelBodyElement);
 
 export class KCUIPanelLabelElement extends KCUIElement {
     static override styles = [
@@ -128,4 +125,3 @@ export class KCUIPanelLabelElement extends KCUIElement {
     }
 }
 
-window.customElements.define("kc-ui-panel-label", KCUIPanelLabelElement);
