@@ -626,6 +626,74 @@ suite("kicad.board.KicadPCB(): board parsing", function () {
             net: 0,
         } as Partial<board.Via>);
     });
+
+    test("with UUID elements", function () {
+        // Test parsing elements with UUID properties
+        const uuid_pcb_src = `(kicad_pcb (version 20211014) (generator pcbnew)
+
+  (general
+    (thickness 1.6)
+  )
+
+  (paper "A4")
+
+  (layers
+    (0 "F.Cu" signal)
+    (31 "B.Cu" signal)
+  )
+
+  (setup
+    (pad_to_mask_clearance 0)
+  )
+
+  (net 0 "")
+  (net 1 "test_net")
+
+  (segment (start 84.2 68.25) (end 83.5 67.55) (width 0.6) (layer "F.Cu") (net 187) (uuid "9dc87fca-ddf6-47e3-aad9-0c691a4103b2"))
+  (arc (start 84.2 68.25) (mid 83.5 67.75) (end 83.0 67.25) (width 0.3) (layer "F.Cu") (net 187) (uuid "d8baa457-5e85-4b9b-a015-c998ce549a54"))
+  (via (at 84.85 64.9) (size 0.45) (drill 0.3) (layers "F.Cu" "B.Cu") (net 187) (uuid "83d590fe-7b5f-41dc-b2cd-c8542352e545"))
+
+)`;
+
+        const pcb = new board.KicadPCB("test.kicad_pcb", uuid_pcb_src);
+
+        assert.equal(pcb.segments.length, 2);
+        assert.equal(pcb.vias.length, 1);
+
+        // Test LineSegment with UUID
+        const segment = pcb.segments[0] as board.LineSegment;
+        assert.deepInclude(segment, {
+            start: { x: 84.2, y: 68.25 },
+            end: { x: 83.5, y: 67.55 },
+            width: 0.6,
+            layer: "F.Cu",
+            net: 187,
+            uuid: "9dc87fca-ddf6-47e3-aad9-0c691a4103b2",
+        } as Partial<board.LineSegment>);
+
+        // Test ArcSegment with UUID
+        const arc = pcb.segments[1] as board.ArcSegment;
+        assert.deepInclude(arc, {
+            start: { x: 84.2, y: 68.25 },
+            mid: { x: 83.5, y: 67.75 },
+            end: { x: 83.0, y: 67.25 },
+            width: 0.3,
+            layer: "F.Cu",
+            net: 187,
+            uuid: "d8baa457-5e85-4b9b-a015-c998ce549a54",
+        } as Partial<board.ArcSegment>);
+
+        // Test Via with UUID
+        const via = pcb.vias[0];
+        assert.deepInclude(via, {
+            at: { position: { x: 84.85, y: 64.9 }, rotation: 0, unlocked: false },
+            size: 0.45,
+            drill: 0.3,
+            layers: ["F.Cu", "B.Cu"],
+            net: 187,
+            uuid: "83d590fe-7b5f-41dc-b2cd-c8542352e545",
+        } as Partial<board.Via>);
+    });
 });
 
 suite("kicad.board.Footprint()", function () {
