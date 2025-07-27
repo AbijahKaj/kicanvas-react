@@ -92,10 +92,11 @@ export class KCUITextFilterInputElement extends KCUIElement {
     }
 
     override render() {
-        return html`<kc-ui-icon class="flex before">search</kc-ui-icon>
+        // Use simple spans instead of kc-ui-icon since web components are no longer registered
+        return html`<span class="flex before" style="font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: inherit; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; -moz-font-feature-settings: 'liga'; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; user-select: none;">search</span>
             <input style="" type="text" placeholder="search" name="search" />
             <button type="button">
-                <kc-ui-icon>close</kc-ui-icon>
+                <span style="font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: inherit; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; -moz-font-feature-settings: 'liga'; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; user-select: none;">close</span>
             </button>`;
     }
 }

@@ -6,7 +6,6 @@
 
 import { attribute, css, html, query } from "../base/web-components";
 import { KCUIElement } from "./element";
-import { KCUIIconElement } from "./icon";
 
 /**
  * kc-ui-button wraps the <button> element with common styles and behaviors
@@ -160,9 +159,6 @@ export class KCUIButtonElement extends KCUIElement {
     @query("button", true)
     private button!: HTMLButtonElement;
 
-    @query("button_icon", true)
-    private button_icon!: KCUIIconElement;
-
     @attribute({ type: String })
     name: string | null;
 
@@ -195,7 +191,7 @@ export class KCUIButtonElement extends KCUIElement {
                 this.button.disabled = value == null ? false : true;
                 break;
             case "icon":
-                this.button_icon.innerText = value ?? "";
+                // Icon is now handled in render() method
                 break;
         }
     }
@@ -209,8 +205,9 @@ export class KCUIButtonElement extends KCUIElement {
     }
 
     override render() {
+        // Use a simple span instead of kc-ui-icon since web components are no longer registered
         const icon = this.icon
-            ? html`<kc-ui-icon part="icon">${this.icon}</kc-ui-icon>`
+            ? html`<span part="icon" style="font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: inherit; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; -moz-font-feature-settings: 'liga'; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; user-select: none;">${this.icon}</span>`
             : undefined;
         return html`<button part="base">
             ${icon}

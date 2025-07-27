@@ -201,8 +201,9 @@ export class KCUIMenuItemElement extends KCUIElement {
     disabled: boolean;
 
     override render() {
+        // Use a simple span instead of kc-ui-icon since web components are no longer registered
         const icon = this.icon
-            ? html`<kc-ui-icon>${this.icon}</kc-ui-icon>`
+            ? html`<span style="font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: inherit; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; -moz-font-feature-settings: 'liga'; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; user-select: none;">${this.icon}</span>`
             : undefined;
         return html`${icon}<slot></slot>`;
     }
