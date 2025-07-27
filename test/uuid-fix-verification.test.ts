@@ -51,17 +51,42 @@ suite("UUID Fix Verification", function () {
 
         // Verify UUID properties are properly set on segments
         const firstSegment = pcb.segments[0] as board.LineSegment;
-        assert.equal(firstSegment.uuid, "9dc87fca-ddf6-47e3-aad9-0c691a4103b2", "First segment should have correct UUID");
-        assert.equal(firstSegment.start.x, 84.2, "First segment should have correct start position");
-        assert.equal(firstSegment.net, 187, "First segment should have correct net");
+        assert.equal(
+            firstSegment.uuid,
+            "9dc87fca-ddf6-47e3-aad9-0c691a4103b2",
+            "First segment should have correct UUID",
+        );
+        assert.equal(
+            firstSegment.start.x,
+            84.2,
+            "First segment should have correct start position",
+        );
+        assert.equal(
+            firstSegment.net,
+            187,
+            "First segment should have correct net",
+        );
 
         // Verify UUID properties are properly set on vias
         const firstVia = pcb.vias[0];
-        assert.equal(firstVia.uuid, "83d590fe-7b5f-41dc-b2cd-c8542352e545", "First via should have correct UUID");
-        assert.equal(firstVia.at.position.x, 84.85, "First via should have correct position");
+        if (!firstVia) {
+            throw new Error("First via not found");
+        }
+        assert.equal(
+            firstVia.uuid,
+            "83d590fe-7b5f-41dc-b2cd-c8542352e545",
+            "First via should have correct UUID",
+        );
+        assert.equal(
+            firstVia.at.position.x,
+            84.85,
+            "First via should have correct position",
+        );
         assert.equal(firstVia.net, 187, "First via should have correct net");
 
         // If we get here without warnings, the fix worked!
-        console.log("✅ UUID parsing fix verified - no 'No def found' warnings should appear");
+        console.log(
+            "✅ UUID parsing fix verified - no 'No def found' warnings should appear",
+        );
     });
 });
