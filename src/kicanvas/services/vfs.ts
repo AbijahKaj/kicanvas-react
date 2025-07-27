@@ -116,6 +116,42 @@ export class FetchFileSystem extends VirtualFileSystem {
 }
 
 /**
+ * Virtual file system for File objects (simpler alternative for dropped files)
+ */
+export class DragDropFileSystem extends VirtualFileSystem {
+    private files: Map<string, File> = new Map();
+
+    constructor(fileList: FileList | File[]) {
+        super();
+        
+        const files = Array.from(fileList);
+        for (const file of files) {
+            this.files.set(file.name, file);
+        }
+    }
+
+    public override *list() {
+        yield* this.files.keys();
+    }
+
+    public override async has(name: string): Promise<boolean> {
+        return this.files.has(name);
+    }
+
+    public override async get(name: string): Promise<File> {
+        const file = this.files.get(name);
+        if (!file) {
+            throw new Error(`File ${name} not found!`);
+        }
+        return file;
+    }
+
+    public async download(name: string) {
+        initiate_download(await this.get(name));
+    }
+}
+
+/**
  * Virtual file system for HTML drag and drop (DataTransfer)
  */
 export class DragAndDropFileSystem extends VirtualFileSystem {
