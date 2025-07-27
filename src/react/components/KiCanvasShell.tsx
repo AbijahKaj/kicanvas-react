@@ -135,6 +135,7 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
     const [isLoaded, setIsLoaded] = useState(loaded);
     const [linkValue, setLinkValue] = useState('');
     const [loadError, setLoadError] = useState<Error | null>(null);
+    const [, forceUpdate] = useState({}); // Used to force re-renders when project state changes
 
     const setupProject = useCallback(async (vfs: any) => {
         setIsLoaded(false);
@@ -146,6 +147,7 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                 project.set_active_page(project.first_page);
             }
             setIsLoaded(true);
+            forceUpdate({}); // Force re-render after project loads
             onProjectLoaded?.(project);
         } catch (error) {
             const err = error as Error;
@@ -200,6 +202,25 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
             cleanupDropTarget?.();
         };
     }, [src, setupProject]);
+
+    // Listen for project events to trigger re-renders when project state changes
+    useEffect(() => {
+        const handleProjectLoad = () => {
+            forceUpdate({}); // Force re-render when project loads
+        };
+
+        const handleProjectChange = () => {
+            forceUpdate({}); // Force re-render when project changes
+        };
+
+        project.addEventListener?.('load', handleProjectLoad);
+        project.addEventListener?.('change', handleProjectChange);
+
+        return () => {
+            project.removeEventListener?.('load', handleProjectLoad);
+            project.removeEventListener?.('change', handleProjectChange);
+        };
+    }, [project]);
 
     const setupDropTarget = () => {
         // Set up drag and drop functionality for the document body

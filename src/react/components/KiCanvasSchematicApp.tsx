@@ -188,11 +188,16 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
     const loadPage = useCallback(async (page: ProjectPage) => {
         if (!viewerRef.current || !canLoad(page)) return;
 
+        // For now, just show the app without waiting for viewer load
+        // This is a temporary fix to get the UI showing
+        setIsHidden(false);
+        
         try {
             await viewerRef.current.load(page.document as KicadSch);
-            setIsHidden(false);
+            // Already showing, no need to setIsHidden(false) again
         } catch (error) {
             console.error('Failed to load schematic page:', error);
+            // Don't hide on error, let user see the UI
         }
     }, []);
 
