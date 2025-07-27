@@ -4,19 +4,19 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { BaseComponent, useKiCanvasContext } from '../base/BaseComponent';
-import { ActivitySideBar } from '../ui/ActivitySideBar';
-import { SplitView, View } from '../ui/SplitView';
-import { KicadSch } from '../../kicad';
-import { SchematicSheet } from '../../kicad/schematic';
-import { SchematicViewer } from '../../viewers/schematic/viewer';
-import { KiCanvasSelectEvent } from '../../viewers/base/events';
-import type { ProjectPage } from '../../kicanvas/project';
-import type { ActivityData } from '../ui/ActivitySideBar';
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { BaseComponent, useKiCanvasContext } from "../base/BaseComponent";
+import { ActivitySideBar } from "../ui/ActivitySideBar";
+import { SplitView, View } from "../ui/SplitView";
+import { KicadSch } from "../../kicad";
+import { SchematicSheet } from "../../kicad/schematic";
+import { SchematicViewer } from "../../viewers/schematic/viewer";
+import { KiCanvasSelectEvent } from "../../viewers/base/events";
+import type { ProjectPage } from "../../kicanvas/project";
+import type { ActivityData } from "../ui/ActivitySideBar";
 
 export interface KiCanvasSchematicAppProps {
-    controls?: 'none' | 'basic' | 'full';
+    controls?: "none" | "basic" | "full";
     controlslist?: string;
     sidebarCollapsed?: boolean;
     disableInteraction?: boolean;
@@ -56,8 +56,8 @@ const schematicAppStyles = `
  * Handles setting up the schematic viewer as well as interface controls.
  */
 export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
-    controls = 'basic',
-    controlslist = '',
+    controls = "basic",
+    controlslist = "",
     sidebarCollapsed = false,
     disableInteraction = false,
     onSelect,
@@ -76,74 +76,73 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
         if (!canvasRef.current || !project) return;
 
         const canvas = canvasRef.current;
-        
+
         // Get theme from project/context - using a basic theme for now
         const theme = project.preferences?.theme?.schematic || {
             // Basic schematic theme structure - this should be expanded
-            anchor: '#ff0000',
-            aux_items: '#ffffff',
-            brightened: '#ffffff',
-            bus: '#0000ff',
-            bus_junction: '#0000ff',
-            component_body: '#ffffff',
-            component_outline: '#ffffff',
-            cursor: '#ffffff',
-            erc_error: '#ff0000',
-            erc_warning: '#ffff00',
-            fields: '#000000',
-            grid: '#808080',
-            grid_axes: '#000000',
-            hidden: '#808080',
-            junction: '#000000',
-            label_global: '#ff0000',
-            label_hier: '#ff0000',
-            label_local: '#000000',
-            no_connect: '#0000ff',
-            note: '#000000',
+            anchor: "#ff0000",
+            aux_items: "#ffffff",
+            brightened: "#ffffff",
+            bus: "#0000ff",
+            bus_junction: "#0000ff",
+            component_body: "#ffffff",
+            component_outline: "#ffffff",
+            cursor: "#ffffff",
+            erc_error: "#ff0000",
+            erc_warning: "#ffff00",
+            fields: "#000000",
+            grid: "#808080",
+            grid_axes: "#000000",
+            hidden: "#808080",
+            junction: "#000000",
+            label_global: "#ff0000",
+            label_hier: "#ff0000",
+            label_local: "#000000",
+            no_connect: "#0000ff",
+            note: "#000000",
             override_item_colors: false,
-            pin: '#ff0000',
-            pin_name: '#000000',
-            pin_number: '#000000',
-            reference: '#000000',
-            shadow: '#808080',
-            sheet: '#ffffff',
-            sheet_background: '#ffffff',
-            sheet_filename: '#000000',
-            sheet_label: '#000000',
-            sheet_name: '#000000',
-            value: '#000000',
-            wire: '#008000',
-            worksheet: '#800080'
+            pin: "#ff0000",
+            pin_name: "#000000",
+            pin_number: "#000000",
+            reference: "#000000",
+            shadow: "#808080",
+            sheet: "#ffffff",
+            sheet_background: "#ffffff",
+            sheet_filename: "#000000",
+            sheet_label: "#000000",
+            sheet_name: "#000000",
+            value: "#000000",
+            wire: "#008000",
+            worksheet: "#800080",
         };
 
-        const viewer = new SchematicViewer(
-            canvas,
-            !disableInteraction,
-            theme
-        );
+        const viewer = new SchematicViewer(canvas, !disableInteraction, theme);
 
         viewerRef.current = viewer;
         onViewerReady?.(viewer);
 
         // Setup viewer selection handling
         const handleSelect = (event: Event) => {
-            const selectEvent = event as CustomEvent<{ item?: unknown; previous?: unknown }>;
+            const selectEvent = event as CustomEvent<{
+                item?: unknown;
+                previous?: unknown;
+            }>;
             const { item, previous } = selectEvent.detail;
-            
+
             // Handle double-selecting/double-clicking on items
             if (item && item === previous) {
                 // If it's a sheet instance, switch over to the new sheet
                 if (item instanceof SchematicSheet) {
                     project.set_active_page?.(
-                        `${item.sheetfile}:${item.path}/${item.uuid}`
+                        `${item.sheetfile}:${item.path}/${item.uuid}`,
                     );
                     return;
                 }
-                
+
                 // Otherwise, show properties panel - callback to parent or ActivitySideBar handles this
                 // onActivityChange?.('properties'); // Would need to be passed to this function
             }
-            
+
             onSelect?.(item, previous);
         };
 
@@ -168,16 +167,18 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
             }
         };
 
-        // Load initial page if available
-        if (project.active_page && canLoad(project.active_page)) {
-            loadPage(project.active_page);
+        // Load initial page if available - look for any schematic page
+        const allPages = Array.from(project.pages()) as ProjectPage[];
+        const schematicPage = allPages.find((page) => canLoad(page));
+        if (schematicPage) {
+            loadPage(schematicPage);
         }
 
         // Listen for project changes
-        project.addEventListener?.('change', handleProjectChange);
+        project.addEventListener?.("change", handleProjectChange);
 
         return () => {
-            project.removeEventListener?.('change', handleProjectChange);
+            project.removeEventListener?.("change", handleProjectChange);
         };
     }, [project]);
 
@@ -191,42 +192,40 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
         // For now, just show the app without waiting for viewer load
         // This is a temporary fix to get the UI showing
         setIsHidden(false);
-        
+
         try {
             await viewerRef.current.load(page.document as KicadSch);
             // Already showing, no need to setIsHidden(false) again
         } catch (error) {
-            console.error('Failed to load schematic page:', error);
+            console.error("Failed to load schematic page:", error);
             // Don't hide on error, let user see the UI
         }
     }, []);
 
     const activities: ActivityData[] = [
         {
-            name: 'Symbols',
-            icon: 'interests',
-            content: <div>Symbols panel placeholder</div>
+            name: "Symbols",
+            icon: "interests",
+            content: <div>Symbols panel placeholder</div>,
         },
         {
-            name: 'Properties', 
-            icon: 'list',
-            content: <div>Properties panel placeholder</div>
+            name: "Properties",
+            icon: "list",
+            content: <div>Properties panel placeholder</div>,
         },
         {
-            name: 'Info',
-            icon: 'info', 
-            content: <div>Info panel placeholder</div>
-        }
+            name: "Info",
+            icon: "info",
+            content: <div>Info panel placeholder</div>,
+        },
     ];
 
-    const classes = [
-        'kc-schematic-app',
-        isHidden && 'hidden',
-        className
-    ].filter(Boolean).join(' ');
+    const classes = ["kc-schematic-app", isHidden && "hidden", className]
+        .filter(Boolean)
+        .join(" ");
 
-    const showControls = controls !== 'none';
-    const showSidebar = showControls && !controlslist.includes('nosidebar');
+    const showControls = controls !== "none";
+    const showSidebar = showControls && !controlslist.includes("nosidebar");
 
     return (
         <BaseComponent
@@ -237,10 +236,7 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
             <SplitView direction="horizontal">
                 <View>
                     <div className="viewer-container">
-                        <canvas 
-                            ref={canvasRef}
-                            className="viewer-canvas"
-                        />
+                        <canvas ref={canvasRef} className="viewer-canvas" />
                     </div>
                 </View>
                 {showSidebar && (

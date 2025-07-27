@@ -9,15 +9,15 @@ KiCanvas now provides a complete React component library as the recommended way 
 ### Basic Embedding
 
 ```jsx
-import React from 'react';
-import { KiCanvasEmbed } from 'kicanvas';
+import React from "react";
+import { KiCanvasEmbed } from "kicanvas";
 
 function MyApp() {
     return (
-        <KiCanvasEmbed 
+        <KiCanvasEmbed
             src="path/to/your/project.kicad_pro"
             controls="full"
-            style={{ width: '100%', height: '600px' }}
+            style={{ width: "100%", height: "600px" }}
         />
     );
 }
@@ -26,15 +26,11 @@ function MyApp() {
 ### Standalone Application
 
 ```jsx
-import React from 'react';
-import { KiCanvasShell } from 'kicanvas';
+import React from "react";
+import { KiCanvasShell } from "kicanvas";
 
 function MyKiCanvasApp() {
-    return (
-        <KiCanvasShell 
-            style={{ width: '100vw', height: '100vh' }}
-        />
-    );
+    return <KiCanvasShell style={{ width: "100vw", height: "100vh" }} />;
 }
 ```
 
@@ -43,6 +39,7 @@ function MyKiCanvasApp() {
 ### Main Application Components
 
 #### KiCanvasEmbed
+
 The main embedding component for KiCanvas projects.
 
 ```jsx
@@ -51,19 +48,21 @@ The main embedding component for KiCanvas projects.
     controls="full"
     theme="dark"
     zoom="objects"
-    onLoad={(project) => console.log('Project loaded:', project)}
+    onLoad={(project) => console.log("Project loaded:", project)}
 />
 ```
 
 Props:
-- `src`: string - Path to the KiCAD project file
-- `sources`: KiCanvasSource[] - Additional source files
-- `controls`: 'none' | 'basic' | 'full' - Control level
-- `controlslist`: string - Custom control list
-- `theme`: string - Theme name
-- `zoom`: 'objects' | 'page' | string - Zoom level
+
+-   `src`: string - Path to the KiCAD project file
+-   `sources`: KiCanvasSource[] - Additional source files
+-   `controls`: 'none' | 'basic' | 'full' - Control level
+-   `controlslist`: string - Custom control list
+-   `theme`: string - Theme name
+-   `zoom`: 'objects' | 'page' | string - Zoom level
 
 #### KiCanvasShell
+
 Standalone application shell with file loading interface.
 
 ```jsx
@@ -75,7 +74,7 @@ Standalone application shell with file loading interface.
 #### Layout Components
 
 ```jsx
-import { App, SplitView, View, ActivitySideBar } from 'kicanvas';
+import { App, SplitView, View, ActivitySideBar } from "kicanvas";
 
 <App>
     <SplitView direction="horizontal">
@@ -85,13 +84,13 @@ import { App, SplitView, View, ActivitySideBar } from 'kicanvas';
                     {
                         name: "Explorer",
                         icon: "folder",
-                        content: <div>File explorer content</div>
+                        content: <div>File explorer content</div>,
                     },
                     {
-                        name: "Search", 
+                        name: "Search",
                         icon: "search",
-                        content: <div>Search content</div>
-                    }
+                        content: <div>Search content</div>,
+                    },
                 ]}
             />
         </View>
@@ -99,7 +98,7 @@ import { App, SplitView, View, ActivitySideBar } from 'kicanvas';
             <div>Main content area</div>
         </View>
     </SplitView>
-</App>
+</App>;
 ```
 
 #### Basic UI Components
@@ -121,10 +120,10 @@ import { Button, Icon, Panel, Menu, Range } from 'kicanvas';
     <PanelTitle>Settings</PanelTitle>
     <PanelBody>
         <PanelLabel>Theme</PanelLabel>
-        <Range 
-            min={0} 
-            max={100} 
-            value={value} 
+        <Range
+            min={0}
+            max={100}
+            value={value}
             onChange={setValue}
         />
     </PanelBody>
@@ -144,16 +143,12 @@ import { Button, Icon, Panel, Menu, Range } from 'kicanvas';
 The React components use React Context for sharing application state:
 
 ```jsx
-import { KiCanvasProvider, useKiCanvasContext } from 'kicanvas';
+import { KiCanvasProvider, useKiCanvasContext } from "kicanvas";
 
 function MyComponent() {
     const { project } = useKiCanvasContext();
-    
-    return (
-        <div>
-            Project loaded: {project ? 'Yes' : 'No'}
-        </div>
-    );
+
+    return <div>Project loaded: {project ? "Yes" : "No"}</div>;
 }
 
 function App() {
@@ -168,19 +163,15 @@ function App() {
 ## Migration from Web Components
 
 ### Before (Web Components)
+
 ```html
-<kicanvas-embed 
-    src="project.kicad_pro" 
-    controls="full">
-</kicanvas-embed>
+<kicanvas-embed src="project.kicad_pro" controls="full"> </kicanvas-embed>
 ```
 
 ### After (React)
+
 ```jsx
-<KiCanvasEmbed 
-    src="project.kicad_pro" 
-    controls="full" 
-/>
+<KiCanvasEmbed src="project.kicad_pro" controls="full" />
 ```
 
 ## Styling
@@ -202,10 +193,10 @@ All existing web components remain available and functional:
 
 ```jsx
 // Still works - web components
-import { KiCanvasEmbedElement, KiCanvasShellElement } from 'kicanvas';
+import { KiCanvasEmbedElement, KiCanvasShellElement } from "kicanvas";
 
-// New recommended - React components  
-import { KiCanvasEmbed, KiCanvasShell } from 'kicanvas';
+// New recommended - React components
+import { KiCanvasEmbed, KiCanvasShell } from "kicanvas";
 ```
 
 ## TypeScript Support
@@ -213,7 +204,7 @@ import { KiCanvasEmbed, KiCanvasShell } from 'kicanvas';
 Full TypeScript support with comprehensive type definitions:
 
 ```tsx
-import { KiCanvasEmbedProps, ButtonProps, ActivityData } from 'kicanvas';
+import { KiCanvasEmbedProps, ButtonProps, ActivityData } from "kicanvas";
 
 interface MyAppProps {
     embedProps: KiCanvasEmbedProps;
@@ -226,10 +217,10 @@ const MyApp: React.FC<MyAppProps> = ({ embedProps }) => {
 
 ## Performance Benefits
 
-- **Tree shaking**: Only import components you use
-- **React optimizations**: Proper memoization and re-rendering optimization
-- **TypeScript**: Compile-time error checking and IntelliSense
-- **Developer experience**: Better debugging with React DevTools
+-   **Tree shaking**: Only import components you use
+-   **React optimizations**: Proper memoization and re-rendering optimization
+-   **TypeScript**: Compile-time error checking and IntelliSense
+-   **Developer experience**: Better debugging with React DevTools
 
 ## Next Steps
 

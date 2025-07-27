@@ -4,8 +4,8 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React from 'react';
-import { BaseComponent } from '../base/BaseComponent';
+import React from "react";
+import { BaseComponent } from "../base/BaseComponent";
 
 export interface PanelProps {
     children?: React.ReactNode;
@@ -108,23 +108,25 @@ const panelLabelStyles = `
 export const Panel: React.FC<PanelProps> = ({ children, className, style }) => {
     return (
         <BaseComponent styles={panelStyles}>
-            <div className={`kc-ui-panel ${className || ''}`} style={style}>
+            <div className={`kc-ui-panel ${className || ""}`} style={style}>
                 {children}
             </div>
         </BaseComponent>
     );
 };
 
-export const PanelTitle: React.FC<PanelTitleProps> = ({ 
-    title, 
-    children, 
-    actions, 
-    className, 
-    style 
+export const PanelTitle: React.FC<PanelTitleProps> = ({
+    title,
+    children,
+    actions,
+    className,
+    style,
 }) => {
     return (
         <BaseComponent styles={panelTitleStyles}>
-            <div className={`kc-ui-panel-title ${className || ''}`} style={style}>
+            <div
+                className={`kc-ui-panel-title ${className || ""}`}
+                style={style}>
                 <div className="title">{title || children}</div>
                 <div className="actions">{actions}</div>
             </div>
@@ -132,28 +134,35 @@ export const PanelTitle: React.FC<PanelTitleProps> = ({
     );
 };
 
-export const PanelBody: React.FC<PanelBodyProps> = ({ 
-    children, 
-    padded = false, 
-    className, 
-    style 
+export const PanelBody: React.FC<PanelBodyProps> = ({
+    children,
+    padded = false,
+    className,
+    style,
 }) => {
     return (
         <BaseComponent styles={panelBodyStyles}>
-            <div 
-                className={`kc-ui-panel-body ${padded ? 'padded' : ''} ${className || ''}`} 
-                style={style}
-            >
+            <div
+                className={`kc-ui-panel-body ${padded ? "padded" : ""} ${
+                    className || ""
+                }`}
+                style={style}>
                 {children}
             </div>
         </BaseComponent>
     );
 };
 
-export const PanelLabel: React.FC<PanelLabelProps> = ({ children, className, style }) => {
+export const PanelLabel: React.FC<PanelLabelProps> = ({
+    children,
+    className,
+    style,
+}) => {
     return (
         <BaseComponent styles={panelLabelStyles}>
-            <div className={`kc-ui-panel-label ${className || ''}`} style={style}>
+            <div
+                className={`kc-ui-panel-label ${className || ""}`}
+                style={style}>
                 {children}
             </div>
         </BaseComponent>

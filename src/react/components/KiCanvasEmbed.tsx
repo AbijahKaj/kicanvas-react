@@ -4,12 +4,12 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { BaseComponent, KiCanvasProvider } from '../base/BaseComponent';
-import { FocusOverlay } from '../ui/FocusOverlay';
-import { Project } from '../../kicanvas/project';
-import { KiCanvasSchematicApp } from './KiCanvasSchematicApp';
-import { KiCanvasBoardApp } from './KiCanvasBoardApp';
+import React, { useState, useEffect, useCallback } from "react";
+import { BaseComponent, KiCanvasProvider } from "../base/BaseComponent";
+import { FocusOverlay } from "../ui/FocusOverlay";
+import { Project } from "../../kicanvas/project";
+import { KiCanvasSchematicApp } from "./KiCanvasSchematicApp";
+import { KiCanvasBoardApp } from "./KiCanvasBoardApp";
 
 export interface KiCanvasSource {
     src: string;
@@ -20,10 +20,10 @@ export interface KiCanvasEmbedProps {
     sources?: KiCanvasSource[];
     loading?: boolean;
     loaded?: boolean;
-    controls?: 'none' | 'basic' | 'full';
+    controls?: "none" | "basic" | "full";
     controlslist?: string;
     theme?: string;
-    zoom?: 'objects' | 'page' | string;
+    zoom?: "objects" | "page" | string;
     customResolver?: (name: string) => URL;
     disableInteraction?: boolean;
     sidebarCollapsed?: boolean;
@@ -72,8 +72,8 @@ export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
     sources = [],
     loading = false,
     loaded = false,
-    controls = 'basic',
-    controlslist = '',
+    controls = "basic",
+    controlslist = "",
     theme,
     zoom,
     customResolver,
@@ -94,12 +94,12 @@ export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
 
     const loadProject = useCallback(async () => {
         const allSources = [];
-        
+
         if (src) {
             allSources.push(src);
         }
-        
-        sources.forEach(source => {
+
+        sources.forEach((source) => {
             if (source.src) {
                 allSources.push(source.src);
             }
@@ -116,27 +116,36 @@ export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
             setLoadError(null);
 
             // Import VFS dynamically
-            const { FetchFileSystem } = await import('../../kicanvas/services/vfs');
+            const { FetchFileSystem } = await import(
+                "../../kicanvas/services/vfs"
+            );
             const vfs = new FetchFileSystem(allSources, customResolver);
-            
+
             await project.load?.(vfs);
-            
+
             setIsLoaded(true);
             onProjectLoaded?.(project);
-            
+
             // Set active page
             if (project.set_active_page && project.root_schematic_page) {
                 project.set_active_page(project.root_schematic_page);
             }
         } catch (error) {
             const err = error as Error;
-            console.error('Failed to load project:', err);
+            console.error("Failed to load project:", err);
             setLoadError(err);
             onProjectError?.(err);
         } finally {
             setIsLoading(false);
         }
-    }, [src, sources, customResolver, project, onProjectLoaded, onProjectError]);
+    }, [
+        src,
+        sources,
+        customResolver,
+        project,
+        onProjectLoaded,
+        onProjectError,
+    ]);
 
     useEffect(() => {
         loadProject();
@@ -156,15 +165,13 @@ export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
 
     const contextValue = {
         project: project,
-        reload: handleReload
+        reload: handleReload,
     };
 
-    const showFocusOverlay = controls !== 'none' && !controlslist?.includes('nooverlay');
+    const showFocusOverlay =
+        controls !== "none" && !controlslist?.includes("nooverlay");
 
-    const classes = [
-        'kc-embed',
-        className
-    ].filter(Boolean).join(' ');
+    const classes = ["kc-embed", className].filter(Boolean).join(" ");
 
     if (!isLoaded) {
         return (
@@ -174,7 +181,9 @@ export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
                 styles={embedStyles}
                 {...props}>
                 {isLoading && <div>Loading...</div>}
-                {loadError && <div>Error loading project: {loadError.message}</div>}
+                {loadError && (
+                    <div>Error loading project: {loadError.message}</div>
+                )}
                 {children}
             </BaseComponent>
         );

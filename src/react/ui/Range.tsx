@@ -4,8 +4,8 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useCallback } from 'react';
-import { BaseComponent } from '../base/BaseComponent';
+import React, { useState, useCallback } from "react";
+import { BaseComponent } from "../base/BaseComponent";
 
 export interface RangeProps {
     name?: string;
@@ -121,38 +121,44 @@ const rangeStyles = `
 
 export const Range: React.FC<RangeProps> = ({
     name,
-    min = '',
-    max = '',
-    step = '',
-    value = '',
+    min = "",
+    max = "",
+    step = "",
+    value = "",
     disabled = false,
     className,
     style,
     onInput,
-    onChange
+    onChange,
 }) => {
-    const [currentValue, setCurrentValue] = useState(value?.toString() || '');
+    const [currentValue, setCurrentValue] = useState(value?.toString() || "");
 
-    const handleInput = useCallback((e: React.FormEvent<HTMLInputElement>) => {
-        const target = e.target as HTMLInputElement;
-        const newValue = target.value;
-        const newValueAsNumber = target.valueAsNumber;
-        
-        setCurrentValue(newValue);
-        onInput?.(newValue, newValueAsNumber);
-    }, [onInput]);
+    const handleInput = useCallback(
+        (e: React.FormEvent<HTMLInputElement>) => {
+            const target = e.target as HTMLInputElement;
+            const newValue = target.value;
+            const newValueAsNumber = target.valueAsNumber;
 
-    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const target = e.target;
-        const newValue = target.value;
-        const newValueAsNumber = target.valueAsNumber;
-        
-        onChange?.(newValue, newValueAsNumber);
-    }, [onChange]);
+            setCurrentValue(newValue);
+            onInput?.(newValue, newValueAsNumber);
+        },
+        [onInput],
+    );
+
+    const handleChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const target = e.target;
+            const newValue = target.value;
+            const newValueAsNumber = target.valueAsNumber;
+
+            onChange?.(newValue, newValueAsNumber);
+        },
+        [onChange],
+    );
 
     return (
         <BaseComponent styles={rangeStyles}>
-            <div className={`kc-ui-range ${className || ''}`} style={style}>
+            <div className={`kc-ui-range ${className || ""}`} style={style}>
                 <input
                     type="range"
                     name={name}

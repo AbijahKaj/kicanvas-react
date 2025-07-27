@@ -4,8 +4,8 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React from 'react';
-import { BaseComponent } from '../base/BaseComponent';
+import React from "react";
+import { BaseComponent } from "../base/BaseComponent";
 
 export interface ViewProps {
     children?: React.ReactNode;
@@ -20,7 +20,7 @@ export interface SplitViewProps {
     children?: React.ReactNode;
     className?: string;
     style?: React.CSSProperties;
-    direction: 'horizontal' | 'vertical';
+    direction: "horizontal" | "vertical";
     grow?: boolean;
     shrink?: boolean;
     fixed?: boolean;
@@ -87,22 +87,24 @@ const splitViewStyles = `
 /**
  * View component for layout. React equivalent of kc-ui-view.
  */
-export const View: React.FC<ViewProps> = ({ 
-    children, 
-    className, 
-    style, 
-    grow, 
-    shrink, 
-    fixed, 
-    ...props 
+export const View: React.FC<ViewProps> = ({
+    children,
+    className,
+    style,
+    grow,
+    shrink,
+    fixed,
+    ...props
 }) => {
     const classes = [
-        'kc-ui-view',
-        grow && 'grow',
-        shrink && 'shrink', 
-        fixed && 'fixed',
-        className
-    ].filter(Boolean).join(' ');
+        "kc-ui-view",
+        grow && "grow",
+        shrink && "shrink",
+        fixed && "fixed",
+        className,
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <BaseComponent
@@ -118,24 +120,26 @@ export const View: React.FC<ViewProps> = ({
 /**
  * SplitView component for split layouts. React equivalent of kc-ui-split-view.
  */
-export const SplitView: React.FC<SplitViewProps> = ({ 
-    children, 
-    className, 
-    style, 
+export const SplitView: React.FC<SplitViewProps> = ({
+    children,
+    className,
+    style,
     direction,
-    grow, 
-    shrink, 
-    fixed, 
-    ...props 
+    grow,
+    shrink,
+    fixed,
+    ...props
 }) => {
     const classes = [
-        'kc-ui-split-view',
+        "kc-ui-split-view",
         direction,
-        grow && 'grow',
-        shrink && 'shrink', 
-        fixed && 'fixed',
-        className
-    ].filter(Boolean).join(' ');
+        grow && "grow",
+        shrink && "shrink",
+        fixed && "fixed",
+        className,
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <BaseComponent

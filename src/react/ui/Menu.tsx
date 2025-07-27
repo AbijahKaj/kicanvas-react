@@ -4,9 +4,9 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useCallback } from 'react';
-import { BaseComponent } from '../base/BaseComponent';
-import { Icon } from './Icon';
+import React, { useState, useCallback } from "react";
+import { BaseComponent } from "../base/BaseComponent";
+import { Icon } from "./Icon";
 
 export interface MenuItemData {
     name: string;
@@ -19,7 +19,7 @@ export interface MenuItemData {
 export interface MenuProps {
     children?: React.ReactNode;
     items?: MenuItemData[];
-    variant?: 'outline' | 'dropdown';
+    variant?: "outline" | "dropdown";
     selected?: string | null;
     className?: string;
     style?: React.CSSProperties;
@@ -140,16 +140,23 @@ export const Menu: React.FC<MenuProps> = ({
     selected,
     className,
     style,
-    onSelect
+    onSelect,
 }) => {
-    const [currentSelected, setCurrentSelected] = useState<string | null>(selected || null);
+    const [currentSelected, setCurrentSelected] = useState<string | null>(
+        selected || null,
+    );
 
-    const handleSelect = useCallback((name: string, item: MenuItemData) => {
-        setCurrentSelected(name);
-        onSelect?.(name, item);
-    }, [onSelect]);
+    const handleSelect = useCallback(
+        (name: string, item: MenuItemData) => {
+            setCurrentSelected(name);
+            onSelect?.(name, item);
+        },
+        [onSelect],
+    );
 
-    const menuClassName = `kc-ui-menu ${variant || ''} ${className || ''}`.trim();
+    const menuClassName = `kc-ui-menu ${variant || ""} ${
+        className || ""
+    }`.trim();
 
     return (
         <BaseComponent styles={menuStyles}>
@@ -161,8 +168,9 @@ export const Menu: React.FC<MenuProps> = ({
                         icon={item.icon}
                         selected={currentSelected === item.name}
                         disabled={item.disabled}
-                        onClick={() => !item.disabled && handleSelect(item.name, item)}
-                    >
+                        onClick={() =>
+                            !item.disabled && handleSelect(item.name, item)
+                        }>
                         {item.children}
                     </MenuItem>
                 ))}
@@ -180,31 +188,37 @@ export const MenuItem: React.FC<MenuItemProps> = ({
     children,
     className,
     style,
-    onClick
+    onClick,
 }) => {
-    const handleClick = useCallback((e: React.MouseEvent) => {
-        if (disabled) return;
-        
-        // Prevent clicks on buttons from triggering item selection
-        if ((e.target as HTMLElement).tagName === 'BUTTON' || 
-            (e.target as HTMLElement).closest('button')) {
-            return;
-        }
-        
-        e.stopPropagation();
-        onClick?.();
-    }, [disabled, onClick]);
+    const handleClick = useCallback(
+        (e: React.MouseEvent) => {
+            if (disabled) return;
 
-    const itemClassName = `kc-ui-menu-item ${selected ? 'selected' : ''} ${disabled ? 'disabled' : ''} ${className || ''}`.trim();
+            // Prevent clicks on buttons from triggering item selection
+            if (
+                (e.target as HTMLElement).tagName === "BUTTON" ||
+                (e.target as HTMLElement).closest("button")
+            ) {
+                return;
+            }
+
+            e.stopPropagation();
+            onClick?.();
+        },
+        [disabled, onClick],
+    );
+
+    const itemClassName = `kc-ui-menu-item ${selected ? "selected" : ""} ${
+        disabled ? "disabled" : ""
+    } ${className || ""}`.trim();
 
     return (
         <BaseComponent styles={menuItemStyles}>
-            <div 
-                className={itemClassName} 
-                style={style} 
+            <div
+                className={itemClassName}
+                style={style}
                 role="menuitem"
-                onClick={handleClick}
-            >
+                onClick={handleClick}>
                 {icon && <Icon className="icon">{icon}</Icon>}
                 <div className="content">{children}</div>
             </div>
@@ -212,10 +226,16 @@ export const MenuItem: React.FC<MenuItemProps> = ({
     );
 };
 
-export const MenuLabel: React.FC<MenuLabelProps> = ({ children, className, style }) => {
+export const MenuLabel: React.FC<MenuLabelProps> = ({
+    children,
+    className,
+    style,
+}) => {
     return (
         <BaseComponent styles={menuLabelStyles}>
-            <div className={`kc-ui-menu-label ${className || ''}`} style={style}>
+            <div
+                className={`kc-ui-menu-label ${className || ""}`}
+                style={style}>
                 {children}
             </div>
         </BaseComponent>
