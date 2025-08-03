@@ -1,78 +1,78 @@
 {
-    "name": "kicanvas-react",
-    "version": "0.0.1",
-    "description": "KiCanvas - Web-based KiCad file viewer",
-    "type": "module",
-    "main": "./build/kicanvas.js",
-    "types": "./build/src/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./build/src/index.d.ts",
-            "import": "./build/kicanvas.js"
-        }
-    },
-    "files": [
-        "build/kicanvas.js",
-        "build/src/**/*.d.ts",
-        "README.md",
-        "LICENSE.md"
-    ],
-    "directories": {
-        "test": "tests"
-    },
-    "devDependencies": {
-        "@esm-bundle/chai": "^4.3.4-fix.0",
-        "@open-wc/semantic-dom-diff": "^0.20.1",
-        "@types/mocha": "^10.0.4",
-        "@typescript-eslint/eslint-plugin": "^6.10.0",
-        "@typescript-eslint/parser": "^6.10.0",
-        "@web/dev-server-esbuild": "^1.0.0",
-        "@web/test-runner": "^0.18.0",
-        "esbuild": "^0.25.8",
-        "eslint": "^8.53.0",
-        "eslint-config-prettier": "^9.0.0",
-        "eslint-plugin-mocha": "^10.2.0",
-        "prettier": "^3.0.3",
-        "svgstore": "^3.0.1",
-        "typescript": "^5.2.2",
-        "typescript-lit-html-plugin": "^0.9.0"
-    },
-    "scripts": {
-        "test:watch": "web-test-runner --config scripts/web-test-runner.config.mjs --watch",
-        "test:coverage": "web-test-runner --config scripts/web-test-runner.config.mjs --coverage",
-        "test": "web-test-runner --config scripts/web-test-runner.config.mjs",
-        "lint:eslint": "eslint --config .eslintrc.cjs src/ --ext .js,.ts",
-        "lint:types": "tsc -p tsconfig.json",
-        "lint:prettier": "prettier . --check",
-        "lint": "npm run lint:eslint && npm run lint:types && npm run lint:prettier",
-        "format": "prettier . --write",
-        "dev": "node scripts/dev-server.js",
-        "build:assets": "npm run build:font && npm run build:sprites",
-        "build:font": "node scripts/build-font.js",
-        "build:sprites": "node scripts/build-sprites.js",
-        "build:types": "tsc -p tsconfig.json",
-        "build:js": "node scripts/build.js",
-        "build": "npm run build:assets && npm run build:types && npm run build:js",
-        "clean": "rm -rf build && rm -rf debug/kicanvas",
-        "prepublishOnly": "npm run clean && npm run build",
-        "pack": "npm run prepublishOnly && npm pack"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/theacodes/kicanvas.js.git"
-    },
-    "author": "Alethea Katherine Flowers",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/theacodes/kicanvas.js/issues"
-    },
-    "homepage": "https://github.com/theacodes/kicanvas.js#readme",
-    "peerDependencies": {
-        "react": "^19.1.0",
-        "react-dom": "^19.1.0"
-    },
-    "dependencies": {
-        "@types/react": "^19.1.8",
-        "@types/react-dom": "^19.1.6"
+  "name": "kicanvas-react",
+  "version": "0.0.1",
+  "description": "React port of KiCanvas - A web-based KiCad file viewer",
+  "type": "module",
+  "main": "./build/kicanvas.js",
+  "types": "./build/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/src/index.d.ts",
+      "import": "./build/kicanvas.js"
     }
+  },
+  "files": [
+    "build/kicanvas.js",
+    "build/src/**/*.d.ts",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "test:watch": "web-test-runner --config scripts/web-test-runner.config.mjs --watch",
+    "test:coverage": "web-test-runner --config scripts/web-test-runner.config.mjs --coverage",
+    "test": "web-test-runner --config scripts/web-test-runner.config.mjs",
+    "lint:eslint": "eslint --config .eslintrc.cjs src/ --ext .js,.ts",
+    "lint:types": "tsc -p tsconfig.json",
+    "lint:prettier": "prettier . --check",
+    "lint": "npm run lint:eslint && npm run lint:types && npm run lint:prettier",
+    "format": "prettier . --write",
+    "dev": "node scripts/serve.js",
+    "build:assets": "npm run build:font && npm run build:sprites",
+    "build:font": "node scripts/build-font.js",
+    "build:sprites": "node scripts/build-sprites.js",
+    "build:types": "tsc -p tsconfig.json",
+    "build:js": "node scripts/build.js",
+    "build": "npm run build:assets && npm run build:types && npm run build:js",
+    "clean": "rm -rf build && rm -rf debug/kicanvas",
+    "prepublishOnly": "npm run clean && npm run build",
+    "pack": "npm run prepublishOnly && npm pack"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {
+    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@open-wc/semantic-dom-diff": "^0.20.1",
+    "@types/mocha": "^10.0.4",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "@web/dev-server-esbuild": "^1.0.0",
+    "@web/test-runner": "^0.18.0",
+    "esbuild": "^0.25.8",
+    "eslint": "^8.53.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-mocha": "^10.2.0",
+    "prettier": "^3.0.3",
+    "svgstore": "^3.0.1",
+    "typescript": "^5.2.2",
+    "typescript-lit-html-plugin": "^0.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theacodes/kicanvas.js.git"
+  },
+  "author": "Alethea Katherine Flowers",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/theacodes/kicanvas.js/issues"
+  },
+  "homepage": "https://github.com/theacodes/kicanvas.js#readme",
+  "peerDependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "dependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6"
+  }
 }

@@ -14,6 +14,15 @@ import { SchematicViewer } from "../../viewers/schematic/viewer";
 import { KiCanvasSelectEvent } from "../../viewers/base/events";
 import type { ProjectPage } from "../../kicanvas/project";
 import type { ActivityData } from "../ui/ActivitySideBar";
+import "./KiCanvasSchematicApp.css";
+
+import { sprites_url } from "../../kicanvas/icons/sprites";
+import { KCUIIconElement } from "../../kc-ui";
+import "../../kicanvas/icons/sprites";
+import "../../kicanvas/elements/common/project-panel";
+
+// Setup KCUIIconElement to use icon sprites.
+KCUIIconElement.sprites_url = sprites_url;
 
 export interface KiCanvasSchematicAppProps {
   controls?: "none" | "basic" | "full";
@@ -25,35 +34,6 @@ export interface KiCanvasSchematicAppProps {
   className?: string;
   style?: React.CSSProperties;
 }
-
-const schematicAppStyles = `
-    .kc-schematic-app {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        background-color: #f0f0f0; /* Add background for debugging */
-    }
-
-    .kc-schematic-app.hidden {
-        display: none;
-    }
-
-    .viewer-container {
-        flex: 1;
-        position: relative;
-        overflow: hidden;
-        background-color: #e0e0e0; /* Add background for debugging */
-    }
-
-    .viewer-canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-        background-color: white; /* Add background for debugging */
-        border: 2px solid #ff0000; /* Add red border for debugging */
-    }
-`;
 
 /**
  * React component equivalent of KCSchematicAppElement.
@@ -269,11 +249,7 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
   const showSidebar = showControls && !controlslist.includes("nosidebar");
 
   return (
-    <BaseComponent
-      className={classes}
-      style={style}
-      styles={schematicAppStyles}
-      {...props}>
+    <BaseComponent className={classes} style={style} {...props}>
       <SplitView direction="horizontal">
         <View>
           <div className="viewer-container">

@@ -1,0 +1,26 @@
+.kc-schematic-app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #f0f0f0; /* Add background for debugging */
+}
+
+.kc-schematic-app.hidden {
+  display: none;
+}
+
+.viewer-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #e0e0e0; /* Add background for debugging */
+}
+
+.viewer-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-color: white; /* Add background for debugging */
+  border: 2px solid #ff0000; /* Add red border for debugging */
+} 
