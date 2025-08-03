@@ -1,26 +1,50 @@
-.kc-schematic-app {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background-color: #f0f0f0; /* Add background for debugging */
-}
+/* KiCanvas Schematic App Styles */
 
-.kc-schematic-app.hidden {
-  display: none;
-}
+:root {
+    /* Base colors */
+    --bg: #282634;
+    --fg: #f8f8f2;
 
-.viewer-container {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  background-color: #e0e0e0; /* Add background for debugging */
-}
+    /* UI components */
+    --button-bg: #44475a;
+    --button-fg: #f8f8f2;
+    --button-hover-bg: #6272a4;
+    --button-hover-fg: #f8f8f2;
+    --button-disabled-bg: #21222c;
+    --button-disabled-fg: #6272a4;
+    --button-selected-bg: #bd93f9;
+    --button-selected-fg: #282a36;
+    --button-focus-outline: 2px solid #8be9fd;
 
-.viewer-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background-color: white; /* Add background for debugging */
-  border: 2px solid #ff0000; /* Add red border for debugging */
-} 
+    /* Panel colors */
+    --panel-bg: #21222c;
+    --panel-fg: #f8f8f2;
+    --panel-header-bg: #282a36;
+    --panel-header-fg: #f8f8f2;
+    --panel-border-color: #44475a;
+
+    /* Toolbar */
+    --toolbar-bg: rgba(40, 42, 54, 0.8);
+    --toolbar-separator-color: #44475a;
+
+    /* Scrollbar */
+    --scrollbar-bg: #282634;
+    --scrollbar-fg: #ae81ff;
+    --scrollbar-hover-fg: #c5a3ff;
+    --scrollbar-active-fg: #bd93f9;
+
+    /* Transitions */
+    --transition-time: 0.3s;
+    --transition-time-short: 0.15s;
+
+    /* Focus overlay */
+    --focus-overlay-bg: rgba(68, 71, 90, 0.8);
+    --focus-overlay-opacity: 0.8;
+    
+    /* Input fields */
+    --input-bg: #21222c;
+    --input-fg: #f8f8f2;
+    --input-border-color: #44475a;
+    --input-placeholder-fg: #6272a4;
+    --input-focus-border-color: #bd93f9;
+}

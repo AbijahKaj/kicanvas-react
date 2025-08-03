@@ -1,77 +1,78 @@
 /*
-    Copyright (c) 2023 Alethea Katherine Flowers.
+    Copyright (c) 2025 Alethea Katherine Flowers.
     Published under the standard MIT License.
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React from "react";
+import React from 'react';
+// Icon component
 
-export interface IconProps {
-    children?: React.ReactNode;
+interface IconProps {
+    children?: string;
     className?: string;
-    style?: React.CSSProperties;
+    material?: boolean;
 }
 
 /**
- * React equivalent of kc-ui-icon web component
- * Material Symbols icon component
+ * Icon component
+ * 
+ * Displays icons from icon sets or sprite sheets
  */
-export const Icon: React.FC<IconProps> = ({
-    children,
-    className = "",
-    style = {},
-}) => {
-    const text = typeof children === "string" ? children : "";
+export const Icon: React.FC<IconProps> = ({ children, className = '', material = false }) => {
+    // Combine class names
+    const classNames = [
+        'kc-icon',
+        material ? 'material-symbols-outlined' : '',
+        className
+    ].filter(Boolean).join(' ');
 
-    const iconStyle: React.CSSProperties = {
-        boxSizing: "border-box",
-        fontFamily: '"Material Symbols Outlined"',
-        fontWeight: "normal",
-        fontStyle: "normal",
-        fontSize: "inherit",
-        lineHeight: 1,
-        letterSpacing: "normal",
-        textTransform: "none",
-        whiteSpace: "nowrap",
-        wordWrap: "normal",
-        direction: "ltr",
-        WebkitFontFeatureSettings: '"liga"',
-        MozFontFeatureSettings: '"liga"',
-        fontFeatureSettings: '"liga"',
-        WebkitFontSmoothing: "antialiased",
-        userSelect: "none",
-        ...style,
-    };
+    const iconStyles = `
+        .kc-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
 
-    // Handle SVG sprites (similar to the original web component)
-    if (text.startsWith("svg:")) {
-        const name = text.slice(4);
-        // This would need to be configured, similar to KCUIIconElement.sprites_url
-        const spritesUrl = (Icon as any).spritesUrl || "";
-        const url = `${spritesUrl}#${name}`;
+        .kc-icon.material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+    `;
 
+    if (!children) {
+        return null;
+    }
+
+    // For sprites (non-material icons), use a different approach
+    if (!material && children.startsWith('#')) {
+        // Use SVG to render icon from sprite sheet
         return (
-            <svg
-                className={className}
-                style={{
-                    ...iconStyle,
-                    width: "1.2em",
-                    height: "auto",
-                    fill: "currentColor",
-                }}
-                viewBox="0 0 48 48"
-                width="48">
-                <use xlinkHref={url} />
-            </svg>
-        );
-    } else {
-        return (
-            <span className={className} style={iconStyle}>
-                {children}
-            </span>
+            <>
+                <style>{iconStyles}</style>
+                <svg className={classNames} aria-hidden="true">
+                    <use href={children} />
+                </svg>
+            </>
         );
     }
+
+    // For material icons or text icons
+    return (
+        <>
+            <style>{iconStyles}</style>
+            <span className={classNames} aria-hidden="true">
+                {children}
+            </span>
+        </>
+    );
 };
 
-// Static property for sprites URL (similar to the original)
-(Icon as any).spritesUrl = "";
+// Static property for sprite URL (similar to the original web component)
+export let spritesUrl = '/sprites.svg';
+
+// Function to set sprites URL
+export function setSpritesUrl(url: string): void {
+    spritesUrl = url;
+}
+
+Icon.displayName = 'Icon';

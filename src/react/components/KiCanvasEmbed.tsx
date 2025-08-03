@@ -1,245 +1,171 @@
 /*
-    Copyright (c) 2023 Alethea Katherine Flowers.
+    Copyright (c) 2025 Alethea Katherine Flowers.
     Published under the standard MIT License.
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useEffect, useCallback } from "react";
-import { BaseComponent, KiCanvasProvider } from "../base/BaseComponent";
-import { FocusOverlay } from "../ui/FocusOverlay";
-import { Project } from "../../kicanvas/project";
-import { KiCanvasSchematicApp } from "./KiCanvasSchematicApp";
-import { KiCanvasBoardApp } from "./KiCanvasBoardApp";
+import React, { useState, useEffect } from 'react';
+// KiCanvasEmbed component
+import { Project } from '../../services/project';
+import { FetchFileSystem, VirtualFileSystem } from '../../services/vfs';
+import { KiCanvasSchematicApp } from './KiCanvasSchematicApp';
+import { KiCanvasBoardApp } from './KiCanvasBoardApp';
+import { FocusOverlay } from '../ui/FocusOverlay';
+
+// Context for sharing the project across components
+// Import Project context from KiCanvasShell
+import { ProjectContext } from './KiCanvasShell';
 
 export interface KiCanvasSource {
-  src: string;
+    src: string;
 }
 
-export interface KiCanvasEmbedProps {
-  src?: string;
-  sources?: KiCanvasSource[];
-  loading?: boolean;
-  loaded?: boolean;
-  controls?: "none" | "basic" | "full";
-  controlslist?: string;
-  theme?: string;
-  zoom?: "objects" | "page" | string;
-  customResolver?: (name: string) => URL;
-  disableInteraction?: boolean;
-  sidebarCollapsed?: boolean;
-  onProjectLoaded?: (project: Project) => void;
-  onProjectError?: (error: Error) => void;
-  onReload?: () => void;
-  className?: string;
-  style?: React.CSSProperties;
-  children?: React.ReactNode;
+interface KiCanvasEmbedProps {
+    src?: string;
+    sources?: KiCanvasSource[];
+    controls?: 'none' | 'basic' | 'full';
+    controlslist?: string;
+    theme?: string;
+    zoom?: 'objects' | 'page' | string;
+    className?: string;
+    customResolver?: (name: string) => URL;
 }
-
-const embedStyles = `
-    .kc-embed {
-        margin: 0;
-        display: flex;
-        position: relative;
-        width: 100%;
-        max-height: 100%;
-        aspect-ratio: 1.414;
-        background-color: aqua;
-        color: var(--fg);
-        font-family: "Nunito", ui-rounded, "Hiragino Maru Gothic ProN",
-            Quicksand, Comfortaa, Manjari, "Arial Rounded MT Bold",
-            Calibri, source-sans-pro, sans-serif;
-        contain: layout paint;
-    }
-
-    .kc-embed main {
-        display: contents;
-    }
-
-    .kc-embed kc-board-app,
-    .kc-embed kc-schematic-app {
-        width: 100%;
-        height: 100%;
-        flex: 1;
-    }
-`;
 
 /**
- * KiCanvasEmbed is the main embedding component for KiCanvas.
- * React equivalent of KiCanvasEmbedElement with full React implementation.
+ * KiCanvasEmbed component
+ * 
+ * Embeddable KiCanvas viewer that loads and displays KiCAD files
  */
 export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
-  src,
-  sources = [],
-  loading = false,
-  loaded = false,
-  controls = "basic",
-  controlslist = "",
-  theme,
-  zoom,
-  customResolver,
-  disableInteraction = false,
-  sidebarCollapsed = false,
-  onProjectLoaded,
-  onProjectError,
-  onReload,
-  className,
-  style,
-  children,
-  ...props
+    src,
+    sources,
+    controls = 'none',
+    controlslist,
+    theme,
+    zoom,
+    className = '',
+    customResolver
 }) => {
-  const [project] = useState(() => new Project());
-  const [isLoading, setIsLoading] = useState(loading);
-  const [isLoaded, setIsLoaded] = useState(loaded);
-  const [loadError, setLoadError] = useState<Error | null>(null);
+    const [project] = useState<Project>(() => new Project());
+    // We don't use this directly in the component, but it's used in the API
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [loading, setLoading] = useState<boolean>(false);
+    const [loaded, setLoaded] = useState<boolean>(false);
 
-  const loadProject = useCallback(async () => {
-    const allSources = [];
+    // Combine class names
+    const classNames = [
+        'kc-kicanvas-embed',
+        className
+    ].filter(Boolean).join(' ');
 
-    if (src) {
-      allSources.push(src);
-    }
+    const embedStyles = `
+        .kc-kicanvas-embed {
+            margin: 0;
+            display: flex;
+            position: relative;
+            width: 100%;
+            max-height: 100%;
+            aspect-ratio: 1.414;
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: "Nunito", ui-rounded, "Hiragino Maru Gothic ProN",
+                Quicksand, Comfortaa, Manjari, "Arial Rounded MT Bold", Calibri,
+                source-sans-pro, sans-serif;
+            contain: layout paint;
+        }
 
-    sources.forEach((source) => {
-      if (source.src) {
-        allSources.push(source.src);
-      }
-    });
+        .kc-kicanvas-embed main {
+            display: contents;
+        }
 
-    if (allSources.length === 0) {
-      console.warn("No valid sources specified");
-      return;
-    }
+        .kc-schematic-app,
+        .kc-board-app {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+        }
+    `;
 
-    try {
-      setIsLoading(true);
-      setIsLoaded(false);
-      setLoadError(null);
+    // Load sources on component mount
+    useEffect(() => {
+        loadSources();
+    }, [src, sources]);
 
-      // Import VFS dynamically
-      const { FetchFileSystem } = await import("../../kicanvas/services/vfs");
-      const vfs = new FetchFileSystem(allSources, customResolver);
+    // Combine sources from props
+    const loadSources = async () => {
+        const sourceUrls: string[] = [];
 
-      await project.load?.(vfs);
+        if (src) {
+            sourceUrls.push(src);
+        }
 
-      console.log("Project loaded successfully");
-      console.log("Project has_schematics:", project.has_schematics);
-      console.log("Project has_boards:", project.has_boards);
-      console.log("Project root_schematic_page:", project.root_schematic_page);
+        if (sources && sources.length > 0) {
+            for (const source of sources) {
+                if (source.src) {
+                    sourceUrls.push(source.src);
+                }
+            }
+        }
 
-      setIsLoaded(true);
-      onProjectLoaded?.(project);
+        if (sourceUrls.length === 0) {
+            console.warn("No valid sources specified");
+            return;
+        }
 
-      // Set active page
-      if (project.set_active_page && project.root_schematic_page) {
-        console.log("Setting active page to:", project.root_schematic_page);
-        project.set_active_page(project.root_schematic_page);
-      } else {
-        console.log(
-          "Cannot set active page - missing set_active_page or root_schematic_page",
-        );
-      }
-    } catch (error) {
-      const err = error as Error;
-      console.error("Failed to load project:", err);
-      setLoadError(err);
-      onProjectError?.(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [src, sources, customResolver, project, onProjectLoaded, onProjectError]);
+        const vfs = new FetchFileSystem(sourceUrls, customResolver || undefined);
+        await setupProject(vfs);
+    };
 
-  useEffect(() => {
-    loadProject();
-  }, [loadProject]);
+    // Set up project with virtual file system
+    const setupProject = async (vfs: VirtualFileSystem) => {
+        setLoaded(false);
+        setLoading(true);
 
-  // Expose reload functionality
-  useEffect(() => {
-    if (onReload) {
-      // In a real implementation, you might want to attach this to a ref or context
-      // For now, we'll call it when the component updates with a signal to reload
-    }
-  }, [onReload]);
+        try {
+            await project.load(vfs);
+            setLoaded(true);
 
-  const handleReload = useCallback(() => {
-    loadProject();
-  }, [loadProject]);
+            if (project.root_schematic_page) {
+                project.set_active_page(project.root_schematic_page);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const contextValue = {
-    project: project,
-    reload: handleReload,
-  };
+    // Check if overlay should be shown
+    const showOverlay = controls !== 'none' && !controlslist?.includes('nooverlay');
 
-  const showFocusOverlay =
-    controls !== "none" && !controlslist?.includes("nooverlay");
-
-  const classes = ["kc-embed", className].filter(Boolean).join(" ");
-
-  if (!isLoaded) {
     return (
-      <BaseComponent
-        className={classes}
-        style={style}
-        styles={embedStyles}
-        {...props}>
-        {isLoading && <div>Loading...</div>}
-        {loadError && <div>Error loading project: {loadError.message}</div>}
-        {children}
-      </BaseComponent>
+        <ProjectContext.Provider value={project}>
+            <style>{embedStyles}</style>
+            <div className={classNames}>
+                <main>
+                    {loaded && project.has_schematics && (
+                        <KiCanvasSchematicApp 
+                            controls={controls}
+                            controlslist={controlslist}
+                            sidebarCollapsed={true}
+                        />
+                    )}
+                    
+                    {loaded && project.has_boards && (
+                        <KiCanvasBoardApp 
+                            controls={controls}
+                            controlslist={controlslist}
+                            sidebarCollapsed={true}
+                        />
+                    )}
+                    
+                    {showOverlay && <FocusOverlay />}
+                </main>
+            </div>
+        </ProjectContext.Provider>
     );
-  }
-
-  return (
-    <KiCanvasProvider value={contextValue}>
-      <BaseComponent
-        className={classes}
-        style={style}
-        styles={embedStyles}
-        {...props}>
-        <main>
-          {/* React components only - no web components */}
-          {project.has_schematics && (
-            <>
-              {console.log("Rendering KiCanvasSchematicApp")}
-              <KiCanvasSchematicApp
-                controls={controls}
-                controlslist={controlslist}
-                sidebarCollapsed={sidebarCollapsed}
-                disableInteraction={disableInteraction}
-              />
-            </>
-          )}
-          {project.has_boards && (
-            <>
-              {console.log("Rendering KiCanvasBoardApp")}
-              <KiCanvasBoardApp
-                controls={controls}
-                controlslist={controlslist}
-                sidebarCollapsed={sidebarCollapsed}
-                disableInteraction={disableInteraction}
-              />
-            </>
-          )}
-          {!project.has_schematics && !project.has_boards && (
-            <div>No schematics or boards found in project</div>
-          )}
-          {showFocusOverlay && <FocusOverlay />}
-        </main>
-        {children}
-      </BaseComponent>
-    </KiCanvasProvider>
-  );
 };
 
-/**
- * KiCanvasSource component for specifying additional sources.
- * React equivalent of KiCanvasSourceElement.
- */
-export interface KiCanvasSourceProps {
-  src: string;
-}
+// Using ProjectContext from KiCanvasShell
 
-export const KiCanvasSource: React.FC<KiCanvasSourceProps> = ({ src }) => {
-  // This component is not rendered but provides source information
-  // It would be used by parent components to collect sources
-  return null;
-};
+KiCanvasEmbed.displayName = 'KiCanvasEmbed';

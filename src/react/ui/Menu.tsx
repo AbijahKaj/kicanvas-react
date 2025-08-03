@@ -1,243 +1,192 @@
 /*
-    Copyright (c) 2023 Alethea Katherine Flowers.
+    Copyright (c) 2025 Alethea Katherine Flowers.
     Published under the standard MIT License.
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useCallback } from "react";
-import { BaseComponent } from "../base/BaseComponent";
-import { Icon } from "./Icon";
+import React, { useState, useRef, useEffect } from 'react';
+// Menu component
 
-export interface MenuItemData {
-    name: string;
+export interface MenuItem {
+    id: string;
+    label: string;
     icon?: string;
     disabled?: boolean;
-    children?: React.ReactNode;
-    data?: any; // Additional data associated with the item
+    action?: () => void;
+    // For submenus
+    children?: MenuItem[];
 }
 
-export interface MenuProps {
-    children?: React.ReactNode;
-    items?: MenuItemData[];
-    variant?: "outline" | "dropdown";
-    selected?: string | null;
+interface MenuProps {
+    items: MenuItem[];
     className?: string;
-    style?: React.CSSProperties;
-    onSelect?: (name: string, item: MenuItemData) => void;
+    horizontal?: boolean;
 }
 
-export interface MenuItemProps {
-    name: string;
-    icon?: string;
-    selected?: boolean;
-    disabled?: boolean;
-    children?: React.ReactNode;
-    className?: string;
-    style?: React.CSSProperties;
-    onClick?: () => void;
-}
-
-export interface MenuLabelProps {
-    children?: React.ReactNode;
-    className?: string;
-    style?: React.CSSProperties;
-}
-
-const menuStyles = `
-    .kc-ui-menu {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        flex-wrap: nowrap;
-        background: var(--list-item-bg);
-        color: var(--list-item-fg);
-    }
-
-    .kc-ui-menu.outline .kc-ui-menu-item {
-        border-bottom: 1px solid var(--grid-outline);
-    }
-
-    .kc-ui-menu.dropdown {
-        --list-item-padding: 0.3em 0.6em;
-        --list-item-bg: var(--dropdown-bg);
-        --list-item-fg: var(--dropdown-fg);
-        --list-item-hover-bg: var(--dropdown-hover-bg);
-        --list-item-hover-fg: var(--dropdown-hover-fg);
-        --list-item-active-bg: var(--dropdown-active-bg);
-        --list-item-active-fg: var(--dropdown-active-fg);
-        max-height: 50vh;
-        overflow-y: auto;
-    }
-`;
-
-const menuItemStyles = `
-    .kc-ui-menu-item {
-        display: flex;
-        align-items: center;
-        flex-wrap: nowrap;
-        padding: var(--list-item-padding, 0.2em 0.3em);
-        user-select: none;
-        background: transparent;
-        transition:
-            color var(--transition-time-short) ease,
-            background-color var(--transition-time-short) ease;
-        cursor: pointer;
-    }
-
-    .kc-ui-menu-item:hover {
-        background: var(--list-item-hover-bg);
-        color: var(--list-item-hover-fg);
-    }
-
-    .kc-ui-menu-item.selected {
-        background: var(--list-item-active-bg);
-        color: var(--list-item-active-fg);
-    }
-
-    .kc-ui-menu-item.disabled {
-        background: var(--list-item-disabled-bg);
-        color: var(--list-item-disabled-fg);
-        cursor: default;
-    }
-
-    .kc-ui-menu-item .content {
-        flex: 1 1 100%;
-        display: block;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-
-    .kc-ui-menu-item .content.narrow {
-        max-width: 100px;
-    }
-
-    .kc-ui-menu-item .content.very-narrow {
-        max-width: 50px;
-    }
-
-    .kc-ui-menu-item .icon {
-        margin-right: 0.5em;
-        margin-left: -0.1em;
-    }
-`;
-
-const menuLabelStyles = `
-    .kc-ui-menu-label {
-        width: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        padding: 0.2em 0.3em;
-        background: var(--panel-subtitle-bg);
-        color: var(--panel-subtitle-fg);
-    }
-`;
-
+/**
+ * Menu component
+ * 
+ * Renders a menu with clickable items and optional submenus
+ */
 export const Menu: React.FC<MenuProps> = ({
-    children,
-    items = [],
-    variant,
-    selected,
-    className,
-    style,
-    onSelect,
+    items,
+    className = '',
+    horizontal = false
 }) => {
-    const [currentSelected, setCurrentSelected] = useState<string | null>(
-        selected || null,
-    );
+    const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
-    const handleSelect = useCallback(
-        (name: string, item: MenuItemData) => {
-            setCurrentSelected(name);
-            onSelect?.(name, item);
-        },
-        [onSelect],
-    );
+    // Combine class names
+    const classNames = [
+        'kc-menu',
+        horizontal ? 'horizontal' : 'vertical',
+        className
+    ].filter(Boolean).join(' ');
 
-    const menuClassName = `kc-ui-menu ${variant || ""} ${
-        className || ""
-    }`.trim();
+    const menuStyles = `
+        .kc-menu {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--menu-bg);
+            border: 1px solid var(--menu-border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            min-width: 180px;
+            z-index: 100;
+        }
 
-    return (
-        <BaseComponent styles={menuStyles}>
-            <div className={menuClassName} style={style} role="menu">
-                {items.map((item) => (
-                    <MenuItem
-                        key={item.name}
-                        name={item.name}
-                        icon={item.icon}
-                        selected={currentSelected === item.name}
-                        disabled={item.disabled}
-                        onClick={() =>
-                            !item.disabled && handleSelect(item.name, item)
-                        }>
-                        {item.children}
-                    </MenuItem>
-                ))}
-                {children}
-            </div>
-        </BaseComponent>
-    );
-};
+        .kc-menu.horizontal {
+            flex-direction: row;
+        }
 
-export const MenuItem: React.FC<MenuItemProps> = ({
-    name,
-    icon,
-    selected = false,
-    disabled = false,
-    children,
-    className,
-    style,
-    onClick,
-}) => {
-    const handleClick = useCallback(
-        (e: React.MouseEvent) => {
-            if (disabled) return;
+        .kc-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5em 1em;
+            color: var(--menu-fg);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            border: none;
+            background: none;
+            font-family: inherit;
+            font-size: inherit;
+            width: 100%;
+            text-align: left;
+            gap: 0.5em;
+        }
 
-            // Prevent clicks on buttons from triggering item selection
-            if (
-                (e.target as HTMLElement).tagName === "BUTTON" ||
-                (e.target as HTMLElement).closest("button")
-            ) {
-                return;
+        .kc-menu.horizontal .kc-menu-item {
+            padding: 0.5em;
+        }
+
+        .kc-menu-item:hover {
+            background-color: var(--menu-hover-bg);
+            color: var(--menu-hover-fg);
+        }
+
+        .kc-menu-item[disabled] {
+            opacity: 0.5;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .kc-menu-item-icon {
+            flex-shrink: 0;
+        }
+
+        .kc-menu-item-label {
+            flex-grow: 1;
+        }
+
+        .kc-menu-item-arrow {
+            margin-left: auto;
+        }
+
+        .kc-submenu-container {
+            position: relative;
+        }
+
+        .kc-submenu {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            margin-top: -1px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .kc-menu.horizontal .kc-submenu {
+            top: 100%;
+            left: 0;
+            margin-top: 0;
+        }
+    `;
+
+    // Close submenu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setActiveSubmenu(null);
             }
+        };
 
-            e.stopPropagation();
-            onClick?.();
-        },
-        [disabled, onClick],
-    );
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
-    const itemClassName = `kc-ui-menu-item ${selected ? "selected" : ""} ${
-        disabled ? "disabled" : ""
-    } ${className || ""}`.trim();
+    // Handle item click
+    const handleItemClick = (item: MenuItem) => {
+        if (item.disabled) return;
+
+        if (item.children && item.children.length > 0) {
+            setActiveSubmenu(activeSubmenu === item.id ? null : item.id);
+        } else if (item.action) {
+            item.action();
+            setActiveSubmenu(null);
+        }
+    };
+
+    // Render menu items recursively
+    const renderMenuItems = (menuItems: MenuItem[], isSubmenu = false) => {
+        return menuItems.map((item) => {
+            const hasSubmenu = item.children && item.children.length > 0;
+            const isActive = activeSubmenu === item.id;
+
+            return (
+                <div key={item.id} className="kc-submenu-container">
+                    <button
+                        className="kc-menu-item"
+                        disabled={item.disabled}
+                        onClick={() => handleItemClick(item)}
+                    >
+                        {item.icon && <span className="kc-menu-item-icon material-symbols-outlined">{item.icon}</span>}
+                        <span className="kc-menu-item-label">{item.label}</span>
+                        {hasSubmenu && (
+                            <span className="kc-menu-item-arrow material-symbols-outlined">
+                                {horizontal ? 'expand_more' : 'chevron_right'}
+                            </span>
+                        )}
+                    </button>
+                    {hasSubmenu && isActive && (
+                        <div className="kc-submenu">
+                            <Menu items={item.children || []} />
+                        </div>
+                    )}
+                </div>
+            );
+        });
+    };
 
     return (
-        <BaseComponent styles={menuItemStyles}>
-            <div
-                className={itemClassName}
-                style={style}
-                role="menuitem"
-                onClick={handleClick}>
-                {icon && <Icon className="icon">{icon}</Icon>}
-                <div className="content">{children}</div>
+        <>
+            <style>{menuStyles}</style>
+            <div ref={menuRef} className={classNames}>
+                {renderMenuItems(items)}
             </div>
-        </BaseComponent>
+        </>
     );
 };
 
-export const MenuLabel: React.FC<MenuLabelProps> = ({
-    children,
-    className,
-    style,
-}) => {
-    return (
-        <BaseComponent styles={menuLabelStyles}>
-            <div
-                className={`kc-ui-menu-label ${className || ""}`}
-                style={style}>
-                {children}
-            </div>
-        </BaseComponent>
-    );
-};
+Menu.displayName = 'Menu';

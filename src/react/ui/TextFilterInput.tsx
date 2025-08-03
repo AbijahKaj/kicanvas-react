@@ -1,141 +1,150 @@
 /*
-    Copyright (c) 2023 Alethea Katherine Flowers.
+    Copyright (c) 2025 Alethea Katherine Flowers.
     Published under the standard MIT License.
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useCallback, useRef } from "react";
-import { BaseComponent } from "../base/BaseComponent";
-import { Icon } from "./Icon";
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from './Button';
 
-export interface TextFilterInputProps {
-    name?: string;
+interface TextFilterInputProps {
     placeholder?: string;
     value?: string;
-    className?: string;
-    style?: React.CSSProperties;
-    onInput?: (value: string) => void;
     onChange?: (value: string) => void;
+    className?: string;
+    autoFocus?: boolean;
 }
 
-const textFilterInputStyles = `
-    .kc-ui-text-filter-input {
-        display: flex;
-        align-items: center;
-        align-content: center;
-        position: relative;
-        border-bottom: 1px solid var(--grid-outline);
-    }
-
-    .kc-ui-text-filter-input .before {
-        pointer-events: none;
-        position: absolute;
-        left: 0;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding-left: 0.25em;
-    }
-
-    .kc-ui-text-filter-input input {
-        all: unset;
-        display: block;
-        width: 100%;
-        max-width: 100%;
-        border-radius: 0;
-        padding: 0.4em;
-        padding-left: 1.5em;
-        text-align: left;
-        font: inherit;
-        background: var(--input-bg);
-        color: var(--input-fg);
-    }
-
-    .kc-ui-text-filter-input input:placeholder-shown + button {
-        display: none;
-    }
-
-    .kc-ui-text-filter-input button {
-        all: unset;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        color: var(--input-fg);
-        padding: 0.25em;
-    }
-
-    .kc-ui-text-filter-input button:hover {
-        cursor: pointer;
-        color: var(--input-accent);
-    }
-`;
-
+/**
+ * TextFilterInput component
+ * 
+ * A text input with clear button for filtering content
+ */
 export const TextFilterInput: React.FC<TextFilterInputProps> = ({
-    name = "search",
-    placeholder = "search",
-    value: propValue = "",
-    className,
-    style,
-    onInput,
+    placeholder = 'Filter...',
+    value: externalValue,
     onChange,
+    className = '',
+    autoFocus = false
 }) => {
-    const [value, setValue] = useState(propValue);
+    // Use controlled or uncontrolled input based on whether value prop is provided
+    const [internalValue, setInternalValue] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
+    
+    // Determine if the component is controlled or uncontrolled
+    const isControlled = externalValue !== undefined;
+    const currentValue = isControlled ? externalValue : internalValue;
 
-    const handleInput = useCallback(
-        (e: React.FormEvent<HTMLInputElement>) => {
-            const newValue = e.currentTarget.value;
-            setValue(newValue);
-            onInput?.(newValue);
-        },
-        [onInput],
-    );
+    // Focus input on mount if autoFocus is true
+    useEffect(() => {
+        if (autoFocus && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [autoFocus]);
 
-    const handleChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            const newValue = e.currentTarget.value;
-            onChange?.(newValue);
-        },
-        [onChange],
-    );
+    // Combine class names
+    const classNames = [
+        'kc-text-filter-input',
+        className
+    ].filter(Boolean).join(' ');
 
-    const handleClear = useCallback(
-        (e: React.MouseEvent<HTMLButtonElement>) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setValue("");
-            if (inputRef.current) {
-                inputRef.current.focus();
-                // Trigger input event to match web component behavior
-                const inputEvent = new Event("input", { bubbles: true });
-                inputRef.current.dispatchEvent(inputEvent);
-            }
-            onInput?.("");
-            onChange?.("");
-        },
-        [onInput, onChange],
-    );
+    const textFilterInputStyles = `
+        .kc-text-filter-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .kc-text-filter-input {
+            flex: 1;
+            border: none;
+            padding: 0.5em;
+            background: transparent;
+            color: var(--input-fg);
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        .kc-text-filter-input:focus {
+            outline: none;
+        }
+
+        .kc-text-filter-input::placeholder {
+            color: var(--input-placeholder-fg);
+        }
+
+        .kc-clear-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25em;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--input-fg);
+            opacity: 0.6;
+        }
+
+        .kc-clear-button:hover {
+            opacity: 1;
+        }
+    `;
+
+    // Handle input change
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        
+        if (!isControlled) {
+            setInternalValue(newValue);
+        }
+        
+        if (onChange) {
+            onChange(newValue);
+        }
+    };
+
+    // Handle clearing the input
+    const handleClear = () => {
+        if (!isControlled) {
+            setInternalValue('');
+        }
+        
+        if (onChange) {
+            onChange('');
+        }
+        
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    };
 
     return (
-        <BaseComponent styles={textFilterInputStyles}>
-            <div
-                className={`kc-ui-text-filter-input ${className || ""}`}
-                style={style}>
-                <Icon className="before">search</Icon>
+        <>
+            <style>{textFilterInputStyles}</style>
+            <div className="kc-text-filter-container">
                 <input
                     ref={inputRef}
+                    className={classNames}
                     type="text"
-                    name={name}
                     placeholder={placeholder}
-                    value={value}
-                    onInput={handleInput}
+                    value={currentValue}
                     onChange={handleChange}
                 />
-                <button type="button" onClick={handleClear}>
-                    <Icon>close</Icon>
-                </button>
+                {currentValue && (
+                    <Button 
+                        className="kc-clear-button"
+                        icon="close" 
+                        onClick={handleClear} 
+                        aria-label="Clear" 
+                    />
+                )}
             </div>
-        </BaseComponent>
+        </>
     );
 };
+
+TextFilterInput.displayName = 'TextFilterInput';

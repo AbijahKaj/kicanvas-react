@@ -1,61 +1,79 @@
 /*
-    Copyright (c) 2023 Alethea Katherine Flowers.
+    Copyright (c) 2025 Alethea Katherine Flowers.
     Published under the standard MIT License.
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { createContext, useContext } from "react";
-import type { ReactNode } from "react";
+import { Component, createContext } from 'react';
+import type { ReactNode } from 'react';
+import type { IDisposable } from '../../base/disposable';
 
-// Context for providing shared services/data (like the project)
-export interface KiCanvasContextType {
-    project?: any; // Project instance
-    reload?: () => void; // Function to reload the project
-    [key: string]: any;
+interface BaseProps {
+    className?: string;
+    children?: ReactNode;
 }
 
-const KiCanvasContext = createContext<KiCanvasContextType>({});
+/**
+ * Base component for all KiCanvas React components
+ * Provides common functionality and styling
+ */
+export class BaseComponent<P = {}, S = {}> extends Component<P & BaseProps, S> implements IDisposable {
+    static contextProviders: Record<string, React.Context<any> | undefined> = {};
+    private disposables: IDisposable[] = [];
 
-export const useKiCanvasContext = () => useContext(KiCanvasContext);
+    /**
+     * Create a context provider for a specific key
+     */
+    static provideContext<T>(key: string, defaultValue: T): React.Context<T> | undefined {
+        if (!this.contextProviders[key]) {
+            this.contextProviders[key] = createContext<T>(defaultValue);
+        }
+        return this.contextProviders[key];
+    }
 
-export interface KiCanvasProviderProps {
-    children: ReactNode;
-    value: KiCanvasContextType;
+    /**
+     * Get a context for a specific key
+     */
+    static getContext<T>(key: string): React.Context<T> | undefined {
+        return this.contextProviders[key];
+    }
+
+    /**
+     * Add disposable objects to be cleaned up when component unmounts
+     */
+    protected registerDisposable(...disposables: IDisposable[]): void {
+        this.disposables.push(...disposables);
+    }
+
+    /**
+     * Clean up registered disposable objects
+     */
+    dispose(): void {
+        for (const disposable of this.disposables) {
+            disposable.dispose();
+        }
+        this.disposables = [];
+    }
+
+    override componentWillUnmount() {
+        this.dispose();
+    }
 }
 
-export const KiCanvasProvider: React.FC<KiCanvasProviderProps> = ({
-    children,
-    value,
-}) => {
-    return (
-        <KiCanvasContext.Provider value={value}>
-            {children}
-        </KiCanvasContext.Provider>
-    );
-};
-
-// Common styles that were previously in KCUIElement
-const commonStyles = `
-    .kc-ui {
+/**
+ * Common CSS for all KiCanvas components
+ */
+export const commonStyles = `
+    * {
         box-sizing: border-box;
     }
 
-    .kc-ui *,
-    .kc-ui *::before,
-    .kc-ui *::after {
-        box-sizing: inherit;
-    }
-
-    .kc-ui [hidden] {
+    [hidden] {
         display: none !important;
     }
 
-    .kc-ui {
-        scrollbar-width: thin;
-        scrollbar-color: #ae81ff #282634;
-    }
-
-    .kc-ui ::-webkit-scrollbar {
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
         position: absolute;
         width: 6px;
         height: 6px;
@@ -63,71 +81,37 @@ const commonStyles = `
         background: var(--scrollbar-bg);
     }
 
-    .kc-ui ::-webkit-scrollbar-thumb {
+    ::-webkit-scrollbar-thumb {
         position: absolute;
         background: var(--scrollbar-fg);
     }
 
-    .kc-ui ::-webkit-scrollbar-thumb:hover {
+    ::-webkit-scrollbar-thumb:hover {
         background: var(--scrollbar-hover-fg);
     }
 
-    .kc-ui ::-webkit-scrollbar-thumb:active {
+    ::-webkit-scrollbar-thumb:active {
         background: var(--scrollbar-active-fg);
     }
+
+    .invert-scrollbar::-webkit-scrollbar {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        margin-left: -6px;
+        background: var(--scrollbar-fg);
+    }
+
+    .invert-scrollbar::-webkit-scrollbar-thumb {
+        position: absolute;
+        background: var(--scrollbar-bg);
+    }
+
+    .invert-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--scrollbar-hover-bg);
+    }
+
+    .invert-scrollbar::-webkit-scrollbar-thumb:active {
+        background: var(--scrollbar-active-bg);
+    }
 `;
-
-// Inject common styles into document head (similar to what web components did)
-if (
-    typeof document !== "undefined" &&
-    !document.getElementById("kc-ui-common-styles")
-) {
-    const style = document.createElement("style");
-    style.id = "kc-ui-common-styles";
-    style.textContent = commonStyles;
-    document.head.appendChild(style);
-}
-
-export interface BaseComponentProps {
-    children?: ReactNode;
-    className?: string;
-    style?: React.CSSProperties;
-    styles?: string; // Component-specific CSS styles
-}
-
-/**
- * Base component that provides common functionality equivalent to KCUIElement
- */
-export const BaseComponent = React.forwardRef<
-    HTMLDivElement,
-    BaseComponentProps
->(({ children, className = "", style = {}, styles, ...props }, ref) => {
-    const combinedClassName = `kc-ui ${className}`.trim();
-
-    // Inject component-specific styles if provided
-    React.useEffect(() => {
-        if (!styles) return;
-
-        const styleId = `kc-component-styles-${Math.random()
-            .toString(36)
-            .substr(2, 9)}`;
-        const styleElement = document.createElement("style");
-        styleElement.id = styleId;
-        styleElement.textContent = styles;
-        document.head.appendChild(styleElement);
-
-        // Cleanup function to remove styles when component unmounts
-        return () => {
-            const existingStyle = document.getElementById(styleId);
-            if (existingStyle) {
-                existingStyle.remove();
-            }
-        };
-    }, [styles]);
-
-    return (
-        <div className={combinedClassName} style={style} ref={ref} {...props}>
-            {children}
-        </div>
-    );
-});

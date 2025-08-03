@@ -1,92 +1,124 @@
 /*
-    Copyright (c) 2023 Alethea Katherine Flowers.
+    Copyright (c) 2025 Alethea Katherine Flowers.
     Published under the standard MIT License.
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React from "react";
-import { BaseComponent } from "../base/BaseComponent";
+import React from 'react';
+import type { ReactNode } from 'react';
 
-export interface FloatingToolbarProps {
-    children?: React.ReactNode;
-    left?: React.ReactNode;
-    right?: React.ReactNode;
-    location?: "top" | "bottom";
+interface FloatingToolbarProps {
+    position?: 'top' | 'bottom';
+    align?: 'left' | 'center' | 'right';
     className?: string;
-    style?: React.CSSProperties;
+    children?: ReactNode;
 }
 
-const floatingToolbarStyles = `
-    .kc-ui-floating-toolbar {
-        z-index: 10;
-        user-select: none;
-        pointer-events: none;
-        position: absolute;
-        left: 0;
-        width: 100%;
-        padding: 0.5em;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
-    }
-
-    .kc-ui-floating-toolbar.location-top {
-        top: 0;
-    }
-
-    .kc-ui-floating-toolbar.location-bottom {
-        bottom: 0;
-    }
-
-    .kc-ui-floating-toolbar > * {
-        user-select: initial;
-        pointer-events: initial;
-    }
-
-    .kc-ui-floating-toolbar .left-content {
-        flex-grow: 999;
-        display: flex;
-    }
-
-    .kc-ui-floating-toolbar .right-content {
-        display: flex;
-    }
-
-    .kc-ui-floating-toolbar .kc-ui-button {
-        margin-left: 0.25em;
-    }
-`;
-
 /**
- * FloatingToolbar is a toolbar that presents its elements on top of another element.
- * React equivalent of kc-ui-floating-toolbar.
+ * FloatingToolbar component
+ * 
+ * A positioned toolbar that floats over content
  */
 export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
-    children,
-    left,
-    right,
-    location = "top",
-    className,
-    style,
-    ...props
+    position = 'bottom',
+    align = 'center',
+    className = '',
+    children
 }) => {
-    const classes = [
-        "kc-ui-floating-toolbar",
-        `location-${location}`,
-        className,
-    ]
-        .filter(Boolean)
-        .join(" ");
+    // Combine class names
+    const classNames = [
+        'kc-floating-toolbar',
+        `position-${position}`,
+        `align-${align}`,
+        className
+    ].filter(Boolean).join(' ');
+
+    const floatingToolbarStyles = `
+        .kc-floating-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5em;
+            position: absolute;
+            padding: 0.5em;
+            background-color: var(--toolbar-bg);
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 50;
+            transition: 
+                opacity var(--transition-time-short) ease,
+                transform var(--transition-time-short) ease;
+        }
+
+        .kc-floating-toolbar.position-top {
+            top: 1em;
+        }
+
+        .kc-floating-toolbar.position-bottom {
+            bottom: 1em;
+        }
+
+        .kc-floating-toolbar.align-left {
+            left: 1em;
+            transform: translateX(0);
+        }
+
+        .kc-floating-toolbar.align-center {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .kc-floating-toolbar.align-right {
+            right: 1em;
+            transform: translateX(0);
+        }
+
+        /* Special styling for button groups */
+        .kc-floating-toolbar .button-group {
+            display: flex;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .kc-floating-toolbar .button-group > * {
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .kc-floating-toolbar .button-group > *:first-child {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        .kc-floating-toolbar .button-group > *:last-child {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .kc-floating-toolbar .separator {
+            width: 1px;
+            background-color: var(--toolbar-separator-color);
+            align-self: stretch;
+            margin: 0 0.25em;
+        }
+    `;
 
     return (
-        <BaseComponent
-            className={classes}
-            style={style}
-            styles={floatingToolbarStyles}
-            {...props}>
-            <div className="left-content">{left || children}</div>
-            <div className="right-content">{right}</div>
-        </BaseComponent>
+        <>
+            <style>{floatingToolbarStyles}</style>
+            <div className={classNames}>
+                {children}
+            </div>
+        </>
     );
 };
+
+// Helper components for toolbar organization
+export const ButtonGroup: React.FC<{ children?: ReactNode }> = ({ children }) => {
+    return <div className="button-group">{children}</div>;
+};
+
+export const Separator: React.FC = () => {
+    return <div className="separator"></div>;
+};
+
+FloatingToolbar.displayName = 'FloatingToolbar';
