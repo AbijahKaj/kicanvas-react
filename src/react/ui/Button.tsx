@@ -132,9 +132,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             }
 
             .kc-button.menu {
-                background: var(--button-menu-bg);
-                color: var(--button-menu-fg);
+                background: var(--button-menu-bg, transparent);
+                color: var(--button-menu-fg, currentColor);
                 padding: 0;
+                min-width: 24px;
+                border: none;
             }
 
             .kc-button.menu:hover {

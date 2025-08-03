@@ -41,6 +41,7 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
     className = ''
 }) => {
     const [project] = useState<Project>(() => new Project());
+    const [activePage, setActivePage] = useState<string | null>(null);
     // State for loading indicators
     // These state variables are used in the API, but TypeScript thinks they're unused
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -160,6 +161,24 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
 
         setupFromURLParams();
     }, [src]);
+    
+    // Listen for project changes to update active page
+    useEffect(() => {
+        const handleProjectChange = () => {
+            console.log('Project changed, active page:', project.active_page?.project_path);
+            if (project.active_page) {
+                setActivePage(project.active_page.project_path);
+            }
+        };
+        
+        // Add event listener for project changes
+        project.addEventListener('change', handleProjectChange);
+        
+        // Clean up
+        return () => {
+            project.removeEventListener('change', handleProjectChange);
+        };
+    }, [project]);
 
     // Handle GitHub link input
     const handleLinkInput = async () => {
@@ -195,7 +214,13 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                 }
             }
             
+            // Set initial active page and update our state
             project.set_active_page(project.first_page);
+            if (project.active_page) {
+                setActivePage(project.active_page.project_path);
+                console.log(`Initial active page set to: ${project.active_page.project_path} (${project.active_page.type})`);
+            }
+            
             setLoaded(true);
         } catch (e) {
             console.error(e);
@@ -257,8 +282,19 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
                 <main>
                     {loaded && (
                         <>
-                            <KiCanvasSchematicApp controls="full" />
-                            <KiCanvasBoardApp controls="full" />
+                            {/* Force re-render of components when active page changes using key prop */}
+                            {project.active_page?.type === "schematic" && (
+                                <KiCanvasSchematicApp 
+                                    key={`schematic-${activePage}`} 
+                                    controls="full" 
+                                />
+                            )}
+                            {project.active_page?.type === "pcb" && (
+                                <KiCanvasBoardApp 
+                                    key={`board-${activePage}`} 
+                                    controls="full" 
+                                />
+                            )}
                         </>
                     )}
                 </main>

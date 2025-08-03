@@ -4,19 +4,227 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useContext, useEffect } from "react";
-// KiCanvasSchematicApp component
-import { SchematicViewer } from "../../viewers/schematic/viewer";
-import { Vec2 } from "../../base/math/vec2";
+import React, { useState, useEffect, useContext } from "react";
 import { App } from "../ui/App";
 import { ActivitySideBar } from "../ui/ActivitySideBar";
-import { Panel } from "../ui/Panel";
 import { Button } from "../ui/Button";
 import { FloatingToolbar } from "../ui/FloatingToolbar";
+import { Panel } from "../ui/Panel";
 import { ProjectContext } from "./KiCanvasShell";
-// Import themes and Color
+import { ProjectPanel } from "./ProjectPanel";
+import { SchematicViewer } from "../../viewers/schematic/viewer";
 import { Color } from "../../base/color";
-import type { SchematicTheme } from "../../kicad/theme";
+import { Vec2 } from "../../base/math";
+import type { SchematicTheme } from "../../kicad";
+
+// Info Panel Component
+const InfoPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
+  viewer,
+}) => {
+  if (!viewer || !viewer.schematic) {
+    return (
+      <Panel title="Information" className="info-panel">
+        <p>No schematic loaded</p>
+      </Panel>
+    );
+  }
+
+  const schematic = viewer.schematic;
+  const ds = viewer.drawing_sheet;
+
+  const header = (name: string) => (
+    <div
+      className="property-header"
+      style={{ fontWeight: "bold", marginTop: "1em", marginBottom: "0.5em" }}>
+      {name}
+    </div>
+  );
+
+  const entry = (name: string, value?: any, suffix = "") => (
+    <div
+      className="property-entry"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "0.25em 0",
+      }}>
+      <span>{name}:</span>
+      <span>
+        {value}
+        {suffix}
+      </span>
+    </div>
+  );
+
+  const comments = Object.entries(schematic.title_block?.comment || {}).map(
+    ([k, v]) => entry(`Comment ${k}`, v),
+  );
+
+  return (
+    <Panel title="Information" className="info-panel">
+      <div style={{ padding: "1em" }}>
+        {header("Page properties")}
+        {entry("Size", ds.paper?.size)}
+        {entry("Width", ds.width, " mm")}
+        {entry("Height", ds.height, " mm")}
+
+        {header("Schematic properties")}
+        {entry("KiCAD version", schematic.version)}
+        {entry("Generator", schematic.generator)}
+        {entry("Title", schematic.title_block?.title)}
+        {entry("Date", schematic.title_block?.date)}
+        {entry("Revision", schematic.title_block?.rev)}
+        {entry("Company", schematic.title_block?.company)}
+        {comments}
+        {entry("Symbols", schematic.symbols.size)}
+        {entry("Unique symbols", schematic.lib_symbols?.symbols.length ?? 0)}
+        {entry("Wires", schematic.wires.length)}
+        {entry("Buses", schematic.buses.length)}
+        {entry("Junctions", schematic.junctions.length)}
+        {entry("Net labels", schematic.net_labels.length)}
+        {entry("Global labels", schematic.global_labels.length)}
+        {entry("Hierarchical labels", schematic.hierarchical_labels.length)}
+        {entry("No connects", schematic.no_connects.length)}
+      </div>
+    </Panel>
+  );
+};
+
+// Symbols Panel Component
+const SymbolsPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
+  viewer,
+}) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+
+  if (!viewer || !viewer.schematic) {
+    return (
+      <Panel title="Symbols" className="symbols-panel">
+        <p>No schematic loaded</p>
+      </Panel>
+    );
+  }
+
+  const schematic = viewer.schematic;
+  const symbols = Array.from(schematic.symbols.values()).sort((a, b) => {
+    // Sort by reference (numeric strings)
+    const aRef = a.reference;
+    const bRef = b.reference;
+    return aRef.localeCompare(bRef, undefined, { numeric: true });
+  });
+
+  const filteredSymbols = symbols.filter((symbol) => {
+    const searchText = searchTerm.toLowerCase();
+    return (
+      symbol.reference.toLowerCase().includes(searchText) ||
+      symbol.value.toLowerCase().includes(searchText) ||
+      symbol.id.toLowerCase().includes(searchText) ||
+      symbol.lib_symbol.name.toLowerCase().includes(searchText)
+    );
+  });
+
+  const handleSymbolClick = (symbol: any) => {
+    setSelectedSymbol(symbol.uuid);
+    // TODO: Implement symbol selection in viewer
+    console.log("Selected symbol:", symbol);
+  };
+
+  return (
+    <Panel title="Symbols" className="symbols-panel">
+      <div style={{ padding: "1em" }}>
+        <div style={{ marginBottom: "1em" }}>
+          <input
+            type="text"
+            placeholder="Search symbols..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.5em",
+              border: "1px solid #444",
+              borderRadius: "4px",
+              backgroundColor: "#282634",
+              color: "#f8f8f0",
+            }}
+          />
+        </div>
+        <div style={{ maxHeight: "400px", overflow: "auto" }}>
+          {filteredSymbols.map((symbol) => (
+            <div
+              key={symbol.uuid}
+              onClick={() => handleSymbolClick(symbol)}
+              style={{
+                padding: "0.5em",
+                border: "1px solid #444",
+                marginBottom: "0.25em",
+                borderRadius: "4px",
+                cursor: "pointer",
+                backgroundColor:
+                  selectedSymbol === symbol.uuid ? "#131218" : "#282634",
+                color: "#f8f8f0",
+              }}>
+              <div style={{ fontWeight: "bold" }}>{symbol.reference}</div>
+              <div style={{ fontSize: "0.9em", color: "#888" }}>
+                {symbol.value} - {symbol.lib_symbol.name}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Panel>
+  );
+};
+
+// Properties Panel Component
+const PropertiesPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
+  viewer,
+}) => {
+  const [_selectedItem, _setSelectedItem] = useState<any>(null);
+
+  if (!viewer || !viewer.schematic) {
+    return (
+      <Panel title="Properties" className="properties-panel">
+        <p>No schematic loaded</p>
+      </Panel>
+    );
+  }
+
+  // TODO: Connect to viewer selection events
+  // For now, show a placeholder
+  const renderProperties = () => {
+    if (!_selectedItem) {
+      return (
+        <div style={{ padding: "1em", color: "#888" }}>
+          <p>Select an item in the schematic to view its properties.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ padding: "1em" }}>
+        <h3 style={{ marginBottom: "1em" }}>Properties</h3>
+        <div style={{ fontSize: "0.9em" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "0.25em 0",
+            }}>
+            <span>Type:</span>
+            <span>{_selectedItem.constructor.name}</span>
+          </div>
+          {/* Add more properties based on item type */}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Panel title="Properties" className="properties-panel">
+      {renderProperties()}
+    </Panel>
+  );
+};
 
 interface KiCanvasSchematicAppProps {
   controls?: "none" | "basic" | "full";
@@ -204,38 +412,32 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
 
   // Define panel activities
   const activities: PanelActivity[] = [
+    // Add project panel if there's more than one page
+    ...(Array.from(project.pages()).length > 1 
+      ? [{
+          id: "project",
+          title: "Project",
+          icon: "folder",
+          component: <ProjectPanel />,
+        }] 
+      : []),
     {
       id: "info",
       title: "Information",
       icon: "info",
-      component: (
-        <Panel title="Information" className="info-panel">
-          <p>Schematic Info Panel</p>
-          {/* Add project information content here */}
-        </Panel>
-      ),
+      component: <InfoPanel viewer={viewer} />,
     },
     {
       id: "symbols",
       title: "Symbols",
       icon: "category",
-      component: (
-        <Panel title="Symbols" className="symbols-panel">
-          {/* Add symbols list here */}
-          <p>Symbols Panel</p>
-        </Panel>
-      ),
+      component: <SymbolsPanel viewer={viewer} />,
     },
     {
       id: "properties",
       title: "Properties",
       icon: "tune",
-      component: (
-        <Panel title="Properties" className="properties-panel">
-          {/* Add properties content here */}
-          <p>Properties Panel</p>
-        </Panel>
-      ),
+      component: <PropertiesPanel viewer={viewer} />,
     },
   ];
 

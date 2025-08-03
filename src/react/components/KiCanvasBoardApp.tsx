@@ -5,19 +5,376 @@
 */
 
 import React, { useState, useContext, useEffect } from "react";
-// KiCanvasBoardApp component
-import { BoardViewer } from "../../viewers/board/viewer";
-import { Vec2 } from "../../base/math/vec2";
 import { App } from "../ui/App";
 import { ActivitySideBar } from "../ui/ActivitySideBar";
-import { Panel } from "../ui/Panel";
 import { Button } from "../ui/Button";
 import { FloatingToolbar } from "../ui/FloatingToolbar";
+import { Panel } from "../ui/Panel";
 import { ProjectContext } from "./KiCanvasShell";
-// Import themes and Color
+import { ProjectPanel } from "./ProjectPanel";
+import { BoardViewer } from "../../viewers/board/viewer";
 import { Color } from "../../base/color";
-import type { BoardTheme } from "../../kicad/theme";
-import type { KicadPCB } from "@kicad/board";
+import { Vec2 } from "../../base/math";
+import type { BoardTheme } from "../../kicad";
+import type { KicadPCB } from "../../kicad/board";
+
+// Info Panel Component
+const InfoPanel: React.FC<{ viewer: BoardViewer | null }> = ({ viewer }) => {
+  if (!viewer || !viewer.board) {
+    return (
+      <Panel title="Information" className="info-panel">
+        <p>No board loaded</p>
+      </Panel>
+    );
+  }
+
+  const board = viewer.board;
+
+  const header = (name: string) => (
+    <div
+      className="property-header"
+      style={{ fontWeight: "bold", marginTop: "1em", marginBottom: "0.5em" }}>
+      {name}
+    </div>
+  );
+
+  const entry = (name: string, value?: any, suffix = "") => (
+    <div
+      className="property-entry"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "0.25em 0",
+      }}>
+      <span>{name}:</span>
+      <span>
+        {value}
+        {suffix}
+      </span>
+    </div>
+  );
+
+  return (
+    <Panel title="Information" className="info-panel">
+      <div style={{ padding: "1em" }}>
+        {header("Board properties")}
+        {entry("KiCAD version", board.version)}
+        {entry("Generator", board.generator)}
+        {entry("General thickness", board.general?.thickness, " mm")}
+        {entry("Copper layers", board.layers.length)}
+        {entry("Board outline items", board.drawings.length)}
+        {entry("Footprints", board.footprints.length)}
+        {entry("Nets", board.nets?.length ?? 0)}
+        {entry("Zones", board.zones.length)}
+        {entry("Traces", board.segments.length)}
+        {entry("Vias", board.vias.length)}
+      </div>
+    </Panel>
+  );
+};
+
+// Layers Panel Component
+const LayersPanel: React.FC<{ viewer: BoardViewer | null }> = ({ viewer }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  if (!viewer || !viewer.board) {
+    return (
+      <Panel title="Layers" className="layers-panel">
+        <p>No board loaded</p>
+      </Panel>
+    );
+  }
+
+  const layers = [
+    { name: "F.Cu", description: "Front Copper" },
+    { name: "B.Cu", description: "Back Copper" },
+    { name: "F.SilkS", description: "Front Silkscreen" },
+    { name: "B.SilkS", description: "Back Silkscreen" },
+    { name: "F.Paste", description: "Front Paste" },
+    { name: "B.Paste", description: "Back Paste" },
+    { name: "F.Mask", description: "Front Mask" },
+    { name: "B.Mask", description: "Back Mask" },
+    { name: "Edge.Cuts", description: "Board Outline" },
+    { name: "Margin", description: "Margin" },
+    { name: "F.CrtYd", description: "Front Courtyard" },
+    { name: "B.CrtYd", description: "Back Courtyard" },
+    { name: "F.Fab", description: "Front Fabrication" },
+    { name: "B.Fab", description: "Back Fabrication" },
+  ];
+
+  const filteredLayers = layers.filter((layer) => {
+    const searchText = searchTerm.toLowerCase();
+    return (
+      layer.name.toLowerCase().includes(searchText) ||
+      layer.description.toLowerCase().includes(searchText)
+    );
+  });
+
+  return (
+    <Panel title="Layers" className="layers-panel">
+      <div style={{ padding: "1em" }}>
+        <div style={{ marginBottom: "1em" }}>
+          <input
+            type="text"
+            placeholder="Search layers..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.5em",
+              border: "1px solid #444",
+              borderRadius: "4px",
+              backgroundColor: "#282634",
+              color: "#f8f8f0",
+            }}
+          />
+        </div>
+        <div style={{ maxHeight: "400px", overflow: "auto" }}>
+          {filteredLayers.map((layer) => (
+            <div
+              key={layer.name}
+              style={{
+                padding: "0.5em",
+                border: "1px solid #444",
+                marginBottom: "0.25em",
+                borderRadius: "4px",
+                backgroundColor: "#282634",
+                color: "#f8f8f0",
+              }}>
+              <div style={{ fontWeight: "bold" }}>{layer.name}</div>
+              <div style={{ fontSize: "0.9em", color: "#888" }}>
+                {layer.description}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Panel>
+  );
+};
+
+// Footprints Panel Component
+const FootprintsPanel: React.FC<{ viewer: BoardViewer | null }> = ({
+  viewer,
+}) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  if (!viewer || !viewer.board) {
+    return (
+      <Panel title="Footprints" className="footprints-panel">
+        <p>No board loaded</p>
+      </Panel>
+    );
+  }
+
+  const board = viewer.board;
+  const footprints = board.footprints || [];
+
+  const filteredFootprints = footprints.filter((footprint) => {
+    const searchText = searchTerm.toLowerCase();
+    return (
+      footprint.reference?.toLowerCase().includes(searchText) ||
+      footprint.value?.toLowerCase().includes(searchText) ||
+      footprint.library_link?.toLowerCase().includes(searchText)
+    );
+  });
+
+  return (
+    <Panel title="Footprints" className="footprints-panel">
+      <div style={{ padding: "1em" }}>
+        <div style={{ marginBottom: "1em" }}>
+          <input
+            type="text"
+            placeholder="Search footprints..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.5em",
+              border: "1px solid #444",
+              borderRadius: "4px",
+              backgroundColor: "#282634",
+              color: "#f8f8f0",
+            }}
+          />
+        </div>
+        <div style={{ maxHeight: "400px", overflow: "auto" }}>
+          {filteredFootprints.map((footprint) => (
+            <div
+              key={footprint.uuid}
+              style={{
+                padding: "0.5em",
+                border: "1px solid #444",
+                marginBottom: "0.25em",
+                borderRadius: "4px",
+                backgroundColor: "#282634",
+                color: "#f8f8f0",
+              }}>
+              <div style={{ fontWeight: "bold" }}>{footprint.reference}</div>
+              <div style={{ fontSize: "0.9em", color: "#888" }}>
+                {footprint.value} - {footprint.library_link}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Panel>
+  );
+};
+
+// Nets Panel Component
+const NetsPanel: React.FC<{ viewer: BoardViewer | null }> = ({ viewer }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  if (!viewer || !viewer.board) {
+    return (
+      <Panel title="Nets" className="nets-panel">
+        <p>No board loaded</p>
+      </Panel>
+    );
+  }
+
+  const board = viewer.board;
+  const nets = board.nets || [];
+
+  const filteredNets = nets.filter((net) => {
+    const searchText = searchTerm.toLowerCase();
+    return net.name.toLowerCase().includes(searchText);
+  });
+
+  return (
+    <Panel title="Nets" className="nets-panel">
+      <div style={{ padding: "1em" }}>
+        <div style={{ marginBottom: "1em" }}>
+          <input
+            type="text"
+            placeholder="Search nets..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.5em",
+              border: "1px solid #444",
+              borderRadius: "4px",
+              backgroundColor: "#282634",
+              color: "#f8f8f0",
+            }}
+          />
+        </div>
+        <div style={{ maxHeight: "400px", overflow: "auto" }}>
+          {filteredNets.map((net) => (
+            <div
+              key={net.number}
+              style={{
+                padding: "0.5em",
+                border: "1px solid #444",
+                marginBottom: "0.25em",
+                borderRadius: "4px",
+                backgroundColor: "#282634",
+                color: "#f8f8f0",
+              }}>
+              <div style={{ fontWeight: "bold" }}>{net.name}</div>
+              <div style={{ fontSize: "0.9em", color: "#888" }}>
+                Number: {net.number}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Panel>
+  );
+};
+
+// Objects Panel Component
+const ObjectsPanel: React.FC<{ viewer: BoardViewer | null }> = ({ viewer }) => {
+  if (!viewer || !viewer.board) {
+    return (
+      <Panel title="Objects" className="objects-panel">
+        <p>No board loaded</p>
+      </Panel>
+    );
+  }
+
+  const board = viewer.board;
+
+  const entry = (name: string, count: number) => (
+    <div
+      className="property-entry"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "0.25em 0",
+      }}>
+      <span>{name}:</span>
+      <span>{count}</span>
+    </div>
+  );
+
+  return (
+    <Panel title="Objects" className="objects-panel">
+      <div style={{ padding: "1em" }}>
+        <h3 style={{ marginBottom: "1em" }}>Board Objects</h3>
+        {entry("Footprints", board.footprints.length)}
+        {entry("Segments", board.segments.length)}
+        {entry("Vias", board.vias.length)}
+        {entry("Zones", board.zones.length)}
+        {entry("Drawings", board.drawings.length)}
+        {entry("Groups", board.groups.length)}
+      </div>
+    </Panel>
+  );
+};
+
+// Properties Panel Component
+const PropertiesPanel: React.FC<{ viewer: BoardViewer | null }> = ({
+  viewer,
+}) => {
+  const [_selectedItem, _setSelectedItem] = useState<any>(null);
+
+  if (!viewer || !viewer.board) {
+    return (
+      <Panel title="Properties" className="properties-panel">
+        <p>No board loaded</p>
+      </Panel>
+    );
+  }
+
+  // TODO: Connect to viewer selection events
+  // For now, show a placeholder
+  const renderProperties = () => {
+    if (!_selectedItem) {
+      return (
+        <div style={{ padding: "1em", color: "#888" }}>
+          <p>Select an item in the board to view its properties.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ padding: "1em" }}>
+        <h3 style={{ marginBottom: "1em" }}>Properties</h3>
+        <div style={{ fontSize: "0.9em" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "0.25em 0",
+            }}>
+            <span>Type:</span>
+            <span>{_selectedItem.constructor.name}</span>
+          </div>
+          {/* Add more properties based on item type */}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Panel title="Properties" className="properties-panel">
+      {renderProperties()}
+    </Panel>
+  );
+};
 
 interface KiCanvasBoardAppProps {
   controls?: "none" | "basic" | "full";
@@ -33,76 +390,6 @@ interface PanelActivity {
   icon: string;
   component: React.ReactNode;
 }
-
-// Define panel activities
-const activities: PanelActivity[] = [
-  {
-    id: "info",
-    title: "Information",
-    icon: "info",
-    component: (
-      <Panel title="Information" className="info-panel">
-        <p>Board Info Panel</p>
-        {/* Add project information content here */}
-      </Panel>
-    ),
-  },
-  {
-    id: "layers",
-    title: "Layers",
-    icon: "layers",
-    component: (
-      <Panel title="Layers" className="layers-panel">
-        {/* Add layers list here */}
-        <p>Layers Panel</p>
-      </Panel>
-    ),
-  },
-  {
-    id: "footprints",
-    title: "Footprints",
-    icon: "developer_board",
-    component: (
-      <Panel title="Footprints" className="footprints-panel">
-        {/* Add footprints list here */}
-        <p>Footprints Panel</p>
-      </Panel>
-    ),
-  },
-  {
-    id: "nets",
-    title: "Nets",
-    icon: "account_tree",
-    component: (
-      <Panel title="Nets" className="nets-panel">
-        {/* Add nets list here */}
-        <p>Nets Panel</p>
-      </Panel>
-    ),
-  },
-  {
-    id: "objects",
-    title: "Objects",
-    icon: "category",
-    component: (
-      <Panel title="Objects" className="objects-panel">
-        {/* Add objects list here */}
-        <p>Objects Panel</p>
-      </Panel>
-    ),
-  },
-  {
-    id: "properties",
-    title: "Properties",
-    icon: "tune",
-    component: (
-      <Panel title="Properties" className="properties-panel">
-        {/* Add properties content here */}
-        <p>Properties Panel</p>
-      </Panel>
-    ),
-  },
-];
 
 /**
  * KiCanvasBoardApp component
@@ -132,6 +419,55 @@ export const KiCanvasBoardApp: React.FC<KiCanvasBoardAppProps> = ({
 
   // Combine class names
   const classNames = ["kc-board-app", className].filter(Boolean).join(" ");
+
+  // Define panel activities
+  const activities: PanelActivity[] = [
+    // Add project panel if there's more than one page
+    ...(Array.from(project.pages()).length > 1 
+      ? [{
+          id: "project",
+          title: "Project",
+          icon: "folder",
+          component: <ProjectPanel />,
+        }] 
+      : []),
+    {
+      id: "info",
+      title: "Information",
+      icon: "info",
+      component: <InfoPanel viewer={viewer} />,
+    },
+    {
+      id: "layers",
+      title: "Layers",
+      icon: "layers",
+      component: <LayersPanel viewer={viewer} />,
+    },
+    {
+      id: "footprints",
+      title: "Footprints",
+      icon: "developer_board",
+      component: <FootprintsPanel viewer={viewer} />,
+    },
+    {
+      id: "nets",
+      title: "Nets",
+      icon: "account_tree",
+      component: <NetsPanel viewer={viewer} />,
+    },
+    {
+      id: "objects",
+      title: "Objects",
+      icon: "category",
+      component: <ObjectsPanel viewer={viewer} />,
+    },
+    {
+      id: "properties",
+      title: "Properties",
+      icon: "tune",
+      component: <PropertiesPanel viewer={viewer} />,
+    },
+  ];
 
   const boardAppStyles = `
         .kc-board-app {
