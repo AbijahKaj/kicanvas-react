@@ -1,0 +1,128 @@
+/*
+    KiCanvas Theme Variables for React Components
+*/
+:root {
+    --font-size: 16px;
+
+    --transition-time-very-short: 100ms;
+    --transition-time-short: 200ms;
+    --transition-time-medium: 500ms;
+
+    --bg: #131218;
+    --fg: #f8f8f0;
+
+    --tooltip-bg: #8864cb;
+    --tooltip-fg: #f8f8f0;
+    --tooltip-border: 1px solid #131218;
+
+    --scrollbar-bg: #131218;
+    --scrollbar-fg: #ae81ff66;
+    --scrollbar-active-fg: #ae81ff;
+    --scrollbar-hover-bg: #ae81ffbb;
+    --scrollbar-hover-fg: #f8f8f0;
+
+    --activity-bar-bg: #282634;
+    --activity-bar-fg: #f8f8f0;
+    --activity-bar-active-bg: #131218;
+    --activity-bar-active-fg: #f8f8f0;
+
+    --resizer-bg: #ae81ff;
+    --resizer-active-bg: #ae81ffbb;
+
+    --panel-bg: #131218;
+    --panel-fg: #f8f8f0;
+    --panel-border: 2px solid #282634;
+    --panel-title-bg: #8077a8;
+    --panel-title-fg: #f8f8f0;
+    --panel-title-border: 1px solid #634e89;
+    --panel-title-button-bg: transparent;
+    --panel-title-button-fg: #dcc8ff;
+    --panel-title-button-hover-bg: #ae81ff;
+    --panel-title-button-hover-fg: inherit;
+    --panel-title-button-disabled-bg: inherit;
+    --panel-title-button-disabled-fg: #888;
+    --panel-subtitle-bg: #634e89;
+    --panel-subtitle-fg: var(--panel-fg);
+
+    --dropdown-bg: #464258;
+    --dropdown-fg: #f8f8f0;
+
+    --button-bg: #81eeff;
+    --button-fg: #131218;
+    --button-hover-bg: #8be9fd;
+    --button-hover-fg: #131218;
+    --button-focus-outline: 2px solid #ae81ff;
+    --button-selected-bg: #ae81ff;
+    --button-selected-fg: #f8f8f0;
+    --button-disabled-bg: #464258;
+    --button-disabled-fg: #6e6a87;
+
+    --button-outline-bg: transparent;
+    --button-outline-fg: #81eeff;
+    --button-outline-hover-bg: #81eeff33;
+    --button-outline-hover-fg: #81eeff;
+    --button-outline-selected-bg: #81eeff33;
+    --button-outline-selected-fg: #81eeff;
+    --button-outline-disabled-bg: transparent;
+    --button-outline-disabled-fg: #6e6a87;
+
+    --button-toolbar-bg: transparent;
+    --button-toolbar-fg: #f8f8f0;
+    --button-toolbar-hover-bg: #8077a8;
+    --button-toolbar-hover-fg: #f8f8f0;
+    --button-toolbar-selected-bg: #ae81ff;
+    --button-toolbar-selected-fg: #f8f8f0;
+    --button-toolbar-disabled-bg: transparent;
+    --button-toolbar-disabled-fg: #6e6a87;
+
+    --button-toolbar-alt-bg: transparent;
+    --button-toolbar-alt-fg: #81eeff;
+    --button-toolbar-alt-hover-bg: #81eeff33;
+    --button-toolbar-alt-hover-fg: #81eeff;
+    --button-toolbar-alt-selected-bg: #81eeff;
+    --button-toolbar-alt-selected-fg: #131218;
+    --button-toolbar-alt-disabled-bg: transparent;
+    --button-toolbar-alt-disabled-fg: #6e6a87;
+
+    --button-menu-bg: transparent;
+    --button-menu-fg: #f8f8f0;
+    --button-menu-hover-bg: #8077a8;
+    --button-menu-hover-fg: #f8f8f0;
+    --button-menu-selected-bg: #ae81ff;
+    --button-menu-selected-fg: #f8f8f0;
+    --button-menu-disabled-bg: transparent;
+    --button-menu-disabled-fg: #6e6a87;
+
+    --input-bg: #282634;
+    --input-fg: #f8f8f0;
+    --input-border-color: #8077a8;
+    --input-focus-border-color: #ae81ff;
+
+    --overlay-bg: rgba(19, 18, 24, 0.9);
+    --overlay-fg: #f8f8f0;
+
+    --toolbar-bg: #282634;
+    --toolbar-fg: #f8f8f0;
+    --toolbar-separator-color: #8077a8;
+
+    /* Material icons */
+    --material-icons-font-path: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
+}
+
+/* Apply Material Icons font */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}

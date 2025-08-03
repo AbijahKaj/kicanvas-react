@@ -8,6 +8,9 @@ import { Component, createContext } from 'react';
 import type { ReactNode } from 'react';
 import type { IDisposable } from '../../base/disposable';
 
+// Import theme variables CSS
+import '../styles/theme-variables.css';
+
 interface BaseProps {
     className?: string;
     children?: ReactNode;

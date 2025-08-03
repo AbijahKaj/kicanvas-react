@@ -192,17 +192,31 @@ export const KiCanvasBoardApp: React.FC<KiCanvasBoardAppProps> = ({
         };
         
         const newViewer = new BoardViewer(viewerRef.current, true, defaultTheme);
-        setViewer(newViewer);
-
+        
         // Set up the viewer
         (async () => {
             try {
+                // Setup the viewer first
                 await newViewer.setup();
+                
+                // Set the viewer to state AFTER setup is complete to ensure all painters are registered
+                setViewer(newViewer);
                 
                 // Set up document if available and active page exists
                 if (project.active_page && project.active_page.document) {
+                    // Patch the document to ensure all items have the correct constructor relationship
+                    const document = project.active_page.document;
+                    
+                    // Force painter re-creation to ensure it has the correct references
+                    if (newViewer.painter) {
+                        // Recreate the painter explicitly
+                        newViewer.painter = newViewer.create_painter();
+                        // Run an initial paint to register all painters
+                        newViewer.paint();
+                    }
+                    
                     // Load the document directly
-                    await newViewer.load(project.active_page.document);
+                    await newViewer.load(document);
                 }
             } catch (error) {
                 console.error('Error setting up viewer:', error);
@@ -332,7 +346,7 @@ export const KiCanvasBoardApp: React.FC<KiCanvasBoardAppProps> = ({
             />
             
             <div className="kc-viewer-container">
-                <canvas ref={viewerRef} style={{ width: '100%', height: '100%' }} />
+                <canvas ref={viewerRef} style={{ width: '100%', height: '100%', touchAction: 'none' }} />
                 
                 {controls !== 'none' && (
                     <FloatingToolbar position="bottom" align="center">

@@ -167,7 +167,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     className={classNames} 
                     {...props}
                 >
-                    {icon && <Icon>{icon}</Icon>}
+                    {icon && <Icon material={!icon.startsWith('#')}>{icon}</Icon>}
                     {children}
                 </button>
             </>

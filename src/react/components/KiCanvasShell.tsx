@@ -14,6 +14,12 @@ import { GitHubFileSystem } from '../../services/github-vfs';
 import { FetchFileSystem, VirtualFileSystem } from '../../services/vfs';
 import { KiCanvasSchematicApp } from './KiCanvasSchematicApp';
 import { KiCanvasBoardApp } from './KiCanvasBoardApp';
+// Import sprites for icon initialization
+import { sprites_url } from '../../kicanvas/icons/sprites';
+import { KCUIIconElement } from '../../kc-ui/icon';
+
+// Initialize sprite URL for icons
+KCUIIconElement.sprites_url = sprites_url;
 
 // Context for sharing the project across components
 // Create a React context for Project
