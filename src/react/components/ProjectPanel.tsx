@@ -73,7 +73,18 @@ export const ProjectPanel: React.FC<ProjectPanelProps> = ({
         // This will trigger the KiCanvasShell to update the visible viewer
         if (project) {
             console.log(`Switching to page: ${page.project_path} (type: ${page.type})`);
-            project.set_active_page(page.project_path);
+            
+            // Force a new event dispatch even if selecting the same page
+            if (project.active_page?.project_path === page.project_path) {
+                // If it's the same page, we need to force a change event
+                const event = new CustomEvent("change", { detail: project });
+                setTimeout(() => {
+                    project.dispatchEvent(event);
+                }, 0);
+            } else {
+                // Different page, normal set_active_page will trigger change event
+                project.set_active_page(page.project_path);
+            }
         }
     };
 

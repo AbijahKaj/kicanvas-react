@@ -16,6 +16,7 @@ import { SchematicViewer } from "../../viewers/schematic/viewer";
 import { Color } from "../../base/color";
 import { Vec2 } from "../../base/math";
 import type { SchematicTheme } from "../../kicad";
+import { KiCanvasSelectEvent } from "src";
 
 // Info Panel Component
 const InfoPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
@@ -97,6 +98,35 @@ const SymbolsPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
 
+  // Effect to listen for selection changes in the viewer
+  useEffect(() => {
+    if (!viewer) return;
+
+    // Handler for when selection changes in the viewer
+    const handleViewerSelection = (e: Event) => {
+      const event = e as CustomEvent;
+      const item = event.detail?.item;
+
+      if (item && item.uuid) {
+        setSelectedSymbol(item.uuid);
+        console.log("Viewer selection changed:", item.uuid);
+      } else {
+        setSelectedSymbol(null);
+      }
+    };
+
+    // Listen for selection changes in the viewer
+    viewer.addEventListener(KiCanvasSelectEvent.type, handleViewerSelection);
+
+    return () => {
+      // Clean up
+      viewer.removeEventListener(
+        KiCanvasSelectEvent.type,
+        handleViewerSelection,
+      );
+    };
+  }, [viewer]);
+
   if (!viewer || !viewer.schematic) {
     return (
       <Panel title="Symbols" className="symbols-panel">
@@ -113,21 +143,105 @@ const SymbolsPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
     return aRef.localeCompare(bRef, undefined, { numeric: true });
   });
 
-  const filteredSymbols = symbols.filter((symbol) => {
+  // Group symbols by type (regular, power, sheets)
+  const regularSymbols = symbols.filter((symbol) => !symbol.lib_symbol.power);
+  const powerSymbols = symbols.filter((symbol) => symbol.lib_symbol.power);
+  const sheets =
+    schematic.sheets?.length > 0
+      ? Array.from(schematic.sheets).sort((a, b) => {
+          const aName = a.sheetname || a.sheetfile || "";
+          const bName = b.sheetname || b.sheetfile || "";
+          return aName.localeCompare(bName, undefined, { numeric: true });
+        })
+      : [];
+
+  const filterItem = (item: any, type: "symbol" | "sheet") => {
+    if (!searchTerm) return true;
+
     const searchText = searchTerm.toLowerCase();
-    return (
-      symbol.reference.toLowerCase().includes(searchText) ||
-      symbol.value.toLowerCase().includes(searchText) ||
-      symbol.id.toLowerCase().includes(searchText) ||
-      symbol.lib_symbol.name.toLowerCase().includes(searchText)
-    );
-  });
+    if (type === "symbol") {
+      return (
+        item.reference.toLowerCase().includes(searchText) ||
+        item.value.toLowerCase().includes(searchText) ||
+        item.id.toLowerCase().includes(searchText) ||
+        item.lib_symbol.name.toLowerCase().includes(searchText)
+      );
+    } else {
+      return (
+        (item.sheetname || "").toLowerCase().includes(searchText) ||
+        (item.sheetfile || "").toLowerCase().includes(searchText)
+      );
+    }
+  };
+
+  // Filter symbols and sheets based on search term
+  const filteredRegularSymbols = regularSymbols.filter((s) =>
+    filterItem(s, "symbol"),
+  );
+  const filteredPowerSymbols = powerSymbols.filter((s) =>
+    filterItem(s, "symbol"),
+  );
+  const filteredSheets = sheets.filter((s) => filterItem(s, "sheet"));
 
   const handleSymbolClick = (symbol: any) => {
+    // Update local state
     setSelectedSymbol(symbol.uuid);
-    // TODO: Implement symbol selection in viewer
-    console.log("Selected symbol:", symbol);
+
+    // Tell the viewer to select this symbol
+    if (viewer) {
+      viewer.select(symbol.uuid);
+      console.log("Selected symbol in viewer:", symbol.uuid);
+    }
   };
+
+  const handleSheetClick = (sheet: any) => {
+    // Update local state
+    setSelectedSymbol(sheet.uuid);
+
+    // Tell the viewer to select this sheet
+    if (viewer) {
+      viewer.select(sheet.uuid);
+      console.log("Selected sheet in viewer:", sheet.uuid);
+    }
+  };
+
+  const renderSymbolItem = (symbol: any) => (
+    <div
+      key={symbol.uuid}
+      onClick={() => handleSymbolClick(symbol)}
+      style={{
+        padding: "0.5em",
+        border: "1px solid #444",
+        marginBottom: "0.25em",
+        borderRadius: "4px",
+        cursor: "pointer",
+        backgroundColor: selectedSymbol === symbol.uuid ? "#131218" : "#282634",
+        color: "#f8f8f0",
+      }}>
+      <div style={{ fontWeight: "bold" }}>{symbol.reference}</div>
+      <div style={{ fontSize: "0.9em", color: "#888" }}>
+        {symbol.value} - {symbol.lib_symbol.name}
+      </div>
+    </div>
+  );
+
+  const renderSheetItem = (sheet: any) => (
+    <div
+      key={sheet.uuid}
+      onClick={() => handleSheetClick(sheet)}
+      style={{
+        padding: "0.5em",
+        border: "1px solid #444",
+        marginBottom: "0.25em",
+        borderRadius: "4px",
+        cursor: "pointer",
+        backgroundColor: selectedSymbol === sheet.uuid ? "#131218" : "#282634",
+        color: "#f8f8f0",
+      }}>
+      <div style={{ fontWeight: "bold" }}>{sheet.sheetname || "Untitled"}</div>
+      <div style={{ fontSize: "0.9em", color: "#888" }}>{sheet.sheetfile}</div>
+    </div>
+  );
 
   return (
     <Panel title="Symbols" className="symbols-panel">
@@ -135,7 +249,7 @@ const SymbolsPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
         <div style={{ marginBottom: "1em" }}>
           <input
             type="text"
-            placeholder="Search symbols..."
+            placeholder="Search symbols and sheets..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -149,26 +263,42 @@ const SymbolsPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
           />
         </div>
         <div style={{ maxHeight: "400px", overflow: "auto" }}>
-          {filteredSymbols.map((symbol) => (
-            <div
-              key={symbol.uuid}
-              onClick={() => handleSymbolClick(symbol)}
-              style={{
-                padding: "0.5em",
-                border: "1px solid #444",
-                marginBottom: "0.25em",
-                borderRadius: "4px",
-                cursor: "pointer",
-                backgroundColor:
-                  selectedSymbol === symbol.uuid ? "#131218" : "#282634",
-                color: "#f8f8f0",
-              }}>
-              <div style={{ fontWeight: "bold" }}>{symbol.reference}</div>
-              <div style={{ fontSize: "0.9em", color: "#888" }}>
-                {symbol.value} - {symbol.lib_symbol.name}
+          {/* Regular symbols */}
+          {filteredRegularSymbols.map(renderSymbolItem)}
+
+          {/* Power symbols section */}
+          {filteredPowerSymbols.length > 0 && (
+            <>
+              <div
+                style={{
+                  padding: "0.25em",
+                  backgroundColor: "#131218",
+                  color: "#888",
+                  fontSize: "0.9em",
+                  marginBottom: "0.5em",
+                }}>
+                Power symbols
               </div>
-            </div>
-          ))}
+              {filteredPowerSymbols.map(renderSymbolItem)}
+            </>
+          )}
+
+          {/* Sheets section */}
+          {filteredSheets.length > 0 && (
+            <>
+              <div
+                style={{
+                  padding: "0.25em",
+                  backgroundColor: "#131218",
+                  color: "#888",
+                  fontSize: "0.9em",
+                  marginBottom: "0.5em",
+                }}>
+                Sheets
+              </div>
+              {filteredSheets.map(renderSheetItem)}
+            </>
+          )}
         </div>
       </div>
     </Panel>
@@ -179,7 +309,36 @@ const SymbolsPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
 const PropertiesPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
   viewer,
 }) => {
-  const [_selectedItem, _setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  // Effect to listen for selection changes in the viewer
+  useEffect(() => {
+    if (!viewer) return;
+
+    // Handler for when selection changes in the viewer
+    const handleViewerSelection = (e: Event) => {
+      const event = e as CustomEvent;
+      const item = event.detail?.item;
+
+      if (item) {
+        setSelectedItem(item);
+        console.log("Properties panel - selection changed:", item);
+      } else {
+        setSelectedItem(null);
+      }
+    };
+
+    // Listen for selection changes in the viewer
+    viewer.addEventListener(KiCanvasSelectEvent.type, handleViewerSelection);
+
+    return () => {
+      // Clean up
+      viewer.removeEventListener(
+        KiCanvasSelectEvent.type,
+        handleViewerSelection,
+      );
+    };
+  }, [viewer]);
 
   if (!viewer || !viewer.schematic) {
     return (
@@ -189,10 +348,8 @@ const PropertiesPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
     );
   }
 
-  // TODO: Connect to viewer selection events
-  // For now, show a placeholder
   const renderProperties = () => {
-    if (!_selectedItem) {
+    if (!selectedItem) {
       return (
         <div style={{ padding: "1em", color: "#888" }}>
           <p>Select an item in the schematic to view its properties.</p>
@@ -200,21 +357,84 @@ const PropertiesPanel: React.FC<{ viewer: SchematicViewer | null }> = ({
       );
     }
 
+    // Helper function to render property entries
+    const entry = (name: string, value?: any, suffix = "") => (
+      <div
+        key={name}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "0.25em 0",
+        }}>
+        <span>{name}:</span>
+        <span>
+          {value !== undefined ? value : "N/A"}
+          {suffix}
+        </span>
+      </div>
+    );
+
+    // Determine which properties to show based on the selected item type
+    const properties = [];
+    const type = selectedItem.constructor.name;
+    properties.push(entry("Type", type));
+
+    // Add common properties that most items have
+    if (selectedItem.uuid) {
+      properties.push(entry("ID", selectedItem.uuid));
+    }
+
+    // Symbol-specific properties
+    if (type === "SchematicSymbol") {
+      properties.push(entry("Reference", selectedItem.reference));
+      properties.push(entry("Value", selectedItem.value));
+      properties.push(entry("Library Name", selectedItem.lib_symbol.name));
+      properties.push(
+        entry("Power Symbol", selectedItem.lib_symbol.power ? "Yes" : "No"),
+      );
+
+      if (selectedItem.unit) {
+        properties.push(entry("Unit", selectedItem.unit));
+      }
+
+      if (selectedItem.position) {
+        properties.push(entry("Position X", selectedItem.position.x, " mm"));
+        properties.push(entry("Position Y", selectedItem.position.y, " mm"));
+      }
+
+      if (selectedItem.angle) {
+        properties.push(entry("Angle", selectedItem.angle, "°"));
+      }
+    }
+
+    // Sheet-specific properties
+    else if (type === "SchematicSheet") {
+      properties.push(entry("Sheet Name", selectedItem.sheetname));
+      properties.push(entry("Sheet File", selectedItem.sheetfile));
+
+      if (selectedItem.position) {
+        properties.push(entry("Position X", selectedItem.position.x, " mm"));
+        properties.push(entry("Position Y", selectedItem.position.y, " mm"));
+      }
+
+      if (selectedItem.size) {
+        properties.push(entry("Width", selectedItem.size.width, " mm"));
+        properties.push(entry("Height", selectedItem.size.height, " mm"));
+      }
+    }
+
+    // Wire-specific properties
+    else if (type === "SchematicWire" || type === "SchematicBus") {
+      properties.push(entry("Start X", selectedItem.start.x, " mm"));
+      properties.push(entry("Start Y", selectedItem.start.y, " mm"));
+      properties.push(entry("End X", selectedItem.end.x, " mm"));
+      properties.push(entry("End Y", selectedItem.end.y, " mm"));
+    }
+
     return (
       <div style={{ padding: "1em" }}>
         <h3 style={{ marginBottom: "1em" }}>Properties</h3>
-        <div style={{ fontSize: "0.9em" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              padding: "0.25em 0",
-            }}>
-            <span>Type:</span>
-            <span>{_selectedItem.constructor.name}</span>
-          </div>
-          {/* Add more properties based on item type */}
-        </div>
+        <div style={{ fontSize: "0.9em" }}>{properties}</div>
       </div>
     );
   };
@@ -413,13 +633,15 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
   // Define panel activities
   const activities: PanelActivity[] = [
     // Add project panel if there's more than one page
-    ...(Array.from(project.pages()).length > 1 
-      ? [{
-          id: "project",
-          title: "Project",
-          icon: "folder",
-          component: <ProjectPanel />,
-        }] 
+    ...(Array.from(project.pages()).length > 1
+      ? [
+          {
+            id: "project",
+            title: "Project",
+            icon: "folder",
+            component: <ProjectPanel />,
+          },
+        ]
       : []),
     {
       id: "info",
