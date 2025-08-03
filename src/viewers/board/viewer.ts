@@ -15,112 +15,106 @@ import { LayerNames, LayerSet, ViewLayer } from "./layers";
 import { BoardPainter } from "./painter";
 
 export class BoardViewer extends DocumentViewer<
-    board_items.KicadPCB,
-    BoardPainter,
-    LayerSet,
-    BoardTheme
+  board_items.KicadPCB,
+  BoardPainter,
+  LayerSet,
+  BoardTheme
 > {
-    get board(): board_items.KicadPCB {
-        return this.document;
+  get board(): board_items.KicadPCB {
+    return this.document;
+  }
+
+  protected override create_renderer(canvas: HTMLCanvasElement): Renderer {
+    const renderer = new WebGL2Renderer(canvas);
+    return renderer;
+  }
+
+  public override create_painter() {
+    return new BoardPainter(this.renderer, this.layers, this.theme);
+  }
+
+  protected override create_layer_set() {
+    return new LayerSet(this.board, this.theme);
+  }
+
+  protected override get grid_origin() {
+    return this.board.setup?.grid_origin ?? new Vec2(0, 0);
+  }
+
+  protected override on_pick(
+    mouse: Vec2,
+    items: Generator<{ layer: ViewLayer; bbox: BBox }, void, unknown>,
+  ): void {
+    let selected = null;
+
+    for (const { layer: _, bbox } of items) {
+      if (bbox.context instanceof board_items.Footprint) {
+        selected = bbox.context;
+        break;
+      }
     }
 
-    protected override create_renderer(canvas: HTMLCanvasElement): Renderer {
-        const renderer = new WebGL2Renderer(canvas);
-        return renderer;
+    this.select(selected);
+  }
+
+  override select(item: board_items.Footprint | string | BBox | null) {
+    // If item is a string, find the footprint by uuid or reference.
+    if (is_string(item)) {
+      item = this.board.find_footprint(item);
     }
 
-    protected override create_painter() {
-        return new BoardPainter(this.renderer, this.layers, this.theme);
+    // If it's a footprint, use the footprint's nominal bounding box.
+    if (item instanceof board_items.Footprint) {
+      item = item.bbox;
     }
 
-    protected override create_layer_set() {
-        return new LayerSet(this.board, this.theme);
+    super.select(item);
+  }
+
+  highlight_net(net: number) {
+    this.painter.paint_net(this.board, net);
+    this.draw();
+  }
+
+  private set_layers_opacity(layers: Generator<ViewLayer>, opacity: number) {
+    for (const layer of layers) {
+      layer.opacity = opacity;
     }
+    this.draw();
+  }
 
-    protected override get grid_origin() {
-        return this.board.setup?.grid_origin ?? new Vec2(0, 0);
-    }
+  set track_opacity(value: number) {
+    this.set_layers_opacity((this.layers as LayerSet).copper_layers(), value);
+  }
 
-    protected override on_pick(
-        mouse: Vec2,
-        items: Generator<{ layer: ViewLayer; bbox: BBox }, void, unknown>,
-    ): void {
-        let selected = null;
+  set via_opacity(value: number) {
+    this.set_layers_opacity((this.layers as LayerSet).via_layers(), value);
+  }
 
-        for (const { layer: _, bbox } of items) {
-            if (bbox.context instanceof board_items.Footprint) {
-                selected = bbox.context;
-                break;
-            }
-        }
+  set zone_opacity(value: number) {
+    this.set_layers_opacity((this.layers as LayerSet).zone_layers(), value);
+  }
 
-        this.select(selected);
-    }
+  set pad_opacity(value: number) {
+    this.set_layers_opacity((this.layers as LayerSet).pad_layers(), value);
+  }
 
-    override select(item: board_items.Footprint | string | BBox | null) {
-        // If item is a string, find the footprint by uuid or reference.
-        if (is_string(item)) {
-            item = this.board.find_footprint(item);
-        }
+  set pad_hole_opacity(value: number) {
+    this.set_layers_opacity((this.layers as LayerSet).pad_hole_layers(), value);
+  }
 
-        // If it's a footprint, use the footprint's nominal bounding box.
-        if (item instanceof board_items.Footprint) {
-            item = item.bbox;
-        }
+  set grid_opacity(value: number) {
+    this.set_layers_opacity((this.layers as LayerSet).grid_layers(), value);
+  }
 
-        super.select(item);
-    }
+  set page_opacity(value: number) {
+    this.layers.by_name(LayerNames.drawing_sheet)!.opacity = value;
+    this.draw();
+  }
 
-    highlight_net(net: number) {
-        this.painter.paint_net(this.board, net);
-        this.draw();
-    }
-
-    private set_layers_opacity(layers: Generator<ViewLayer>, opacity: number) {
-        for (const layer of layers) {
-            layer.opacity = opacity;
-        }
-        this.draw();
-    }
-
-    set track_opacity(value: number) {
-        this.set_layers_opacity(
-            (this.layers as LayerSet).copper_layers(),
-            value,
-        );
-    }
-
-    set via_opacity(value: number) {
-        this.set_layers_opacity((this.layers as LayerSet).via_layers(), value);
-    }
-
-    set zone_opacity(value: number) {
-        this.set_layers_opacity((this.layers as LayerSet).zone_layers(), value);
-    }
-
-    set pad_opacity(value: number) {
-        this.set_layers_opacity((this.layers as LayerSet).pad_layers(), value);
-    }
-
-    set pad_hole_opacity(value: number) {
-        this.set_layers_opacity(
-            (this.layers as LayerSet).pad_hole_layers(),
-            value,
-        );
-    }
-
-    set grid_opacity(value: number) {
-        this.set_layers_opacity((this.layers as LayerSet).grid_layers(), value);
-    }
-
-    set page_opacity(value: number) {
-        this.layers.by_name(LayerNames.drawing_sheet)!.opacity = value;
-        this.draw();
-    }
-
-    zoom_to_board() {
-        const edge_cuts = this.layers.by_name(LayerNames.edge_cuts)!;
-        const board_bbox = edge_cuts.bbox;
-        this.viewport.camera.bbox = board_bbox.grow(board_bbox.w * 0.1);
-    }
+  zoom_to_board() {
+    const edge_cuts = this.layers.by_name(LayerNames.edge_cuts)!;
+    const board_bbox = edge_cuts.bbox;
+    this.viewport.camera.bbox = board_bbox.grow(board_bbox.w * 0.1);
+  }
 }

@@ -163,6 +163,11 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
 
         // Set up document if available and active page exists
         if (project.active_page && project.active_page.document) {
+          // Check if this is a schematic page before loading
+          if (project.active_page.type !== "schematic") {
+            return;
+          }
+
           // Force painter re-creation to ensure it has the correct references
           if (newViewer.painter) {
             // Recreate the painter explicitly
