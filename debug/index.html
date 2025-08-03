@@ -1,11 +1,22 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" href="./style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KiCanvas React Demo</title>
   </head>
   <body>
-    <kc-kicanvas-shell id="kicanvas"></kc-kicanvas-shell>
+    <div id="root"></div>
 
-    <script type="module" src="./kicanvas/kicanvas.js"></script>
+    <script type="module">
+      import * as KiCanvas from "./kicanvas/kicanvas.js";
+
+      const { KiCanvasShell, createRoot, React } = KiCanvas;
+      const root = document.getElementById("root");
+      const reactRoot = createRoot(root);
+
+      // Use React.createElement to ensure we use the correct React instance
+      reactRoot.render(React.createElement(KiCanvasShell, {}));
+    </script>
   </body>
 </html>

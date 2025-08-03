@@ -24,6 +24,11 @@ export {
 export { createRoot } from "react-dom/client";
 
 // ========================================
+// React Components
+// ========================================
+export * from "./react";
+
+// ========================================
 // Core KiCad File Parsers & Types
 // ========================================
 export * from "./kicad";

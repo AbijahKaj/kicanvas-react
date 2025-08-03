@@ -15,8 +15,7 @@ import { Button } from '../ui/Button';
 import { FloatingToolbar } from '../ui/FloatingToolbar';
 import { ProjectContext } from './KiCanvasShell';
 // Import themes and Color
-// No need for Color with empty theme approach
-// import { Color } from '../../base/color';
+import { Color } from '../../base/color';
 import type { BoardTheme } from '../../kicad/theme';
 
 interface KiCanvasBoardAppProps {
@@ -100,18 +99,115 @@ export const KiCanvasBoardApp: React.FC<KiCanvasBoardAppProps> = ({
     useEffect(() => {
         if (!viewerRef.current || !project) return;
 
-        // Use empty object and cast to BoardTheme
+        // Create a basic board theme with required colors using Color objects
         // This is just for development - in production, use a proper theme
-        const defaultTheme = {} as BoardTheme;
+        const defaultTheme: BoardTheme = {
+            background: Color.from_css('#131218'),
+            grid: Color.from_css('#8864cb'),
+            grid_axes: Color.from_css('#ae81ff'),
+            anchor: Color.from_css('#f8f8f0'),
+            aux_items: Color.from_css('#8be9fd'),
+            b_adhes: Color.from_css('#f8f8f0'),
+            b_crtyd: Color.from_css('#f92672'),
+            b_fab: Color.from_css('#8be9fd'),
+            b_mask: Color.from_css('#66d9ef'),
+            b_paste: Color.from_css('#ae81ff'),
+            b_silks: Color.from_css('#f8f8f0'),
+            brightened: Color.from_css('#ffffff'),
+            cmts_user: Color.from_css('#f8f8f0'),
+            cursor: Color.from_css('#ff00ff'),
+            dwgs_user: Color.from_css('#f8f8f0'),
+            edge_cuts: Color.from_css('#f92672'),
+            f_adhes: Color.from_css('#f8f8f0'),
+            f_crtyd: Color.from_css('#f92672'),
+            f_fab: Color.from_css('#8be9fd'),
+            f_mask: Color.from_css('#66d9ef'),
+            f_paste: Color.from_css('#ae81ff'),
+            f_silks: Color.from_css('#f8f8f0'),
+            footprint_text_invisible: Color.from_css('#f8f8f066'),
+            hidden: Color.from_css('#f8f8f066'),
+            hidden_text: Color.from_css('#f8f8f066'),
+            margin: Color.from_css('#f8f8f0'),
+            no_connect: Color.from_css('#f8f8f0'),
+            pad_plated_hole: Color.from_css('#ae81ff'),
+            pad_through_hole: Color.from_css('#f8f8f0'),
+            non_plated_hole: Color.from_css('#ae81ff'),
+            shadow: Color.from_css('rgba(0, 0, 0, 0.5)'),
+            via_blind_buried: Color.from_css('#8be9fd'),
+            via_hole: Color.from_css('#ae81ff'),
+            via_micro: Color.from_css('#66d9ef'),
+            via_through: Color.from_css('#f8f8f0'),
+            worksheet: Color.from_css('#f8f8f0'),
+            // Add copper layers which is required by the LayerSet
+            copper: {
+                f: Color.from_css('#f8f8f0'),
+                b: Color.from_css('#f8f8f0'),
+                in1: Color.from_css('#f8f8f0'),
+                in2: Color.from_css('#f8f8f0'),
+                in3: Color.from_css('#f8f8f0'),
+                in4: Color.from_css('#f8f8f0'),
+                in5: Color.from_css('#f8f8f0'),
+                in6: Color.from_css('#f8f8f0'),
+                in7: Color.from_css('#f8f8f0'),
+                in8: Color.from_css('#f8f8f0'),
+                in9: Color.from_css('#f8f8f0'),
+                in10: Color.from_css('#f8f8f0'),
+                in11: Color.from_css('#f8f8f0'),
+                in12: Color.from_css('#f8f8f0'),
+                in13: Color.from_css('#f8f8f0'),
+                in14: Color.from_css('#f8f8f0'),
+                in15: Color.from_css('#f8f8f0'),
+                in16: Color.from_css('#f8f8f0'),
+                in17: Color.from_css('#f8f8f0'),
+                in18: Color.from_css('#f8f8f0'),
+                in19: Color.from_css('#f8f8f0'),
+                in20: Color.from_css('#f8f8f0'),
+                in21: Color.from_css('#f8f8f0'),
+                in22: Color.from_css('#f8f8f0'),
+                in23: Color.from_css('#f8f8f0'),
+                in24: Color.from_css('#f8f8f0'),
+                in25: Color.from_css('#f8f8f0'),
+                in26: Color.from_css('#f8f8f0'),
+                in27: Color.from_css('#f8f8f0'),
+                in28: Color.from_css('#f8f8f0'),
+                in29: Color.from_css('#f8f8f0'),
+                in30: Color.from_css('#f8f8f0')
+            },
+            // Additional required properties
+            drc_error: Color.from_css('#ff0000'),
+            drc_warning: Color.from_css('#ffa500'),
+            drc_exclusion: Color.from_css('#ff00ff'),
+            ratsnest: Color.from_css('#ffffff'),
+            user_1: Color.from_css('#ffffff'),
+            user_2: Color.from_css('#ffffff'),
+            user_3: Color.from_css('#ffffff'),
+            user_4: Color.from_css('#ffffff'),
+            user_5: Color.from_css('#ffffff'),
+            user_6: Color.from_css('#ffffff'),
+            user_7: Color.from_css('#ffffff'),
+            user_8: Color.from_css('#ffffff'),
+            user_9: Color.from_css('#ffffff'),
+            eco1_user: Color.from_css('#ffffff'),
+            eco2_user: Color.from_css('#ffffff')
+        };
+        
         const newViewer = new BoardViewer(viewerRef.current, true, defaultTheme);
         setViewer(newViewer);
 
-        // Set up viewer
-        // Set up document if available and active page exists
-        if (project.active_page && project.active_page.document) {
-            // Cast to appropriate type
-            newViewer.document = project.active_page.document as any;
-        }
+        // Set up the viewer
+        (async () => {
+            try {
+                await newViewer.setup();
+                
+                // Set up document if available and active page exists
+                if (project.active_page && project.active_page.document) {
+                    // Load the document directly
+                    await newViewer.load(project.active_page.document);
+                }
+            } catch (error) {
+                console.error('Error setting up viewer:', error);
+            }
+        })();
 
         // Clean up
         return () => {

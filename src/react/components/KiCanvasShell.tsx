@@ -180,6 +180,15 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
 
         try {
             await project.load(vfs);
+            
+            // This is a key difference between the web component and React implementation
+            // The web component calls `update_hierarchical_data` internally, but we need to do it here
+            for (const schematic of project.schematics()) {
+                if (schematic && typeof schematic.update_hierarchical_data === 'function') {
+                    schematic.update_hierarchical_data('/');
+                }
+            }
+            
             project.set_active_page(project.first_page);
             setLoaded(true);
         } catch (e) {

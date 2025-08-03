@@ -56,7 +56,6 @@ export class PreferencesChangeEvent extends CustomEvent<PreferencesChangeEventDe
  * Mixin used to add provideContext and requestContext methods.
  */
 export function WithPreferences<T extends Constructor<KCUIElement>>(Base: T) {
-  // @ts-ignore: Ignore the error about private properties
   return class WithPreferences extends Base {
     constructor(...args: any[]) {
       super(...args);

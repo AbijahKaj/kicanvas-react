@@ -15,8 +15,7 @@ import { Button } from '../ui/Button';
 import { FloatingToolbar } from '../ui/FloatingToolbar';
 import { ProjectContext } from './KiCanvasShell';
 // Import themes and Color
-// No need for Color with empty theme approach
-// import { Color } from '../../base/color';
+import { Color } from '../../base/color';
 import type { SchematicTheme } from '../../kicad/theme';
 
 interface KiCanvasSchematicAppProps {
@@ -77,6 +76,14 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
             position: relative;
         }
 
+        .kc-viewer-container canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background-color: #131218; /* Default background color */
+            touch-action: none;
+        }
+
         .controls-none .kc-floating-toolbar {
             display: none;
         }
@@ -99,18 +106,64 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
     useEffect(() => {
         if (!viewerRef.current || !project) return;
 
-        // Use empty object and cast to SchematicTheme
+        // Create a theme with proper Color objects
         // This is just for development - in production, use a proper theme
-        const defaultTheme = {} as SchematicTheme;
+        const defaultTheme: SchematicTheme = {
+            background: Color.from_css('#131218'),
+            note: Color.from_css('#f8f8f0'),
+            wire: Color.from_css('#f8f8f0'),
+            bus: Color.from_css('#ae81ff'),
+            junction: Color.from_css('#f8f8f0'),
+            pin: Color.from_css('#f8f8f0'),
+            pin_name: Color.from_css('#f8f8f0'),
+            pin_number: Color.from_css('#f8f8f0'),
+            component_body: Color.from_css('#282634'),
+            component_outline: Color.from_css('#f8f8f0'),
+            no_connect: Color.from_css('#f8f8f0'),
+            label: Color.from_css('#f8f8f0'),
+            label_global: Color.from_css('#8be9fd'),
+            label_hier: Color.from_css('#ae81ff'),
+            anchor: Color.from_css('#f8f8f0'),
+            hidden_pin: Color.from_css('#f8f8f0'),
+            value: Color.from_css('#f8f8f0'),
+            reference: Color.from_css('#f8f8f0'),
+            shadow: Color.from_css('rgba(0, 0, 0, 0.5)'),
+            brightened: Color.from_css('#f8f8f0'),
+            sheet: Color.from_css('#f8f8f0'),
+            sheet_filename: Color.from_css('#f8f8f0'),
+            sheet_name: Color.from_css('#f8f8f0'),
+            sheet_background: Color.from_css('#282634'),
+            sheet_fields: Color.from_css('#f8f8f0'),
+            note_background: Color.from_css('#282634'),
+            fields: Color.from_css('#f8f8f0'),
+            grid: Color.from_css('#8864cb'),
+            cursor: Color.from_css('#ff00ff'),
+            hidden_text: Color.from_css('#f8f8f066'),
+            hidden: Color.from_css('#f8f8f066'),
+            device: Color.from_css('#f8f8f0'),
+            worksheet: Color.from_css('#f8f8f0'),
+            overlay: Color.from_css('#8864cb'),
+            aux_items: Color.from_css('#8be9fd'),
+            erc_warning: Color.from_css('#ff5555')
+        };
+        
         const newViewer = new SchematicViewer(viewerRef.current, true, defaultTheme);
         setViewer(newViewer);
 
-        // Set up viewer
-        // Set up document if available and active page exists
-        if (project.active_page && project.active_page.document) {
-            // Cast to appropriate type
-            newViewer.document = project.active_page.document as any;
-        }
+        // Set up the viewer
+        (async () => {
+            try {
+                await newViewer.setup();
+                
+                // Set up document if available and active page exists
+                if (project.active_page && project.active_page.document) {
+                    // Load the project page instead of just the document
+                    await newViewer.load(project.active_page);
+                }
+            } catch (error) {
+                console.error('Error setting up viewer:', error);
+            }
+        })();
 
         // Clean up
         return () => {

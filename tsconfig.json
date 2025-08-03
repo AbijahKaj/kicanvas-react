@@ -44,7 +44,6 @@
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedIndexedAccess": true,
-        "noImplicitOverride": true,
         "noPropertyAccessFromIndexSignature": true,
         "allowUnusedLabels": false,
         "allowUnreachableCode": false,
@@ -64,6 +63,6 @@
             "@viewers/*": ["./src/viewers/*"]
         }
     },
-    "include": ["./src/react/**/*"],
+    "include": ["./src/**/*"],
     "exclude": ["./node_modules", "./**/node_modules/*", "./scripts/", "./build/", "./debug/"]
 }
