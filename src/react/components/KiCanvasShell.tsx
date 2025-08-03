@@ -4,19 +4,19 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 // KiCanvasShell component
-import { App } from '../ui/App';
-import { DropTarget } from '../../base/dom/drag-drop';
-import { Project } from '../../services/project';
-import { GitHub } from '../../services/github';
-import { GitHubFileSystem } from '../../services/github-vfs';
-import { FetchFileSystem, VirtualFileSystem } from '../../services/vfs';
-import { KiCanvasSchematicApp } from './KiCanvasSchematicApp';
-import { KiCanvasBoardApp } from './KiCanvasBoardApp';
+import { App } from "../ui/App";
+import { DropTarget } from "../../base/dom/drag-drop";
+import { Project } from "../../services/project";
+import { GitHub } from "../../services/github";
+import { GitHubFileSystem } from "../../services/github-vfs";
+import { FetchFileSystem, VirtualFileSystem } from "../../services/vfs";
+import { KiCanvasSchematicApp } from "./KiCanvasSchematicApp";
+import { KiCanvasBoardApp } from "./KiCanvasBoardApp";
 // Import sprites for icon initialization
-import { sprites_url } from '../../kicanvas/icons/sprites';
-import { KCUIIconElement } from '../../kc-ui/icon';
+import { sprites_url } from "../../kicanvas/icons/sprites";
+import { KCUIIconElement } from "../../kc-ui/icon";
 
 // Initialize sprite URL for icons
 KCUIIconElement.sprites_url = sprites_url;
@@ -26,36 +26,33 @@ KCUIIconElement.sprites_url = sprites_url;
 export const ProjectContext = React.createContext<Project | null>(null);
 
 interface KiCanvasShellProps {
-    src?: string;
-    className?: string;
+  src?: string;
+  className?: string;
 }
 
 /**
  * KiCanvasShell component
- * 
+ *
  * The main entry point for the KiCanvas application.
  * Handles file loading, project management, and app switching.
  */
 export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
-    src,
-    className = ''
+  src,
+  className = "",
 }) => {
-    const [project] = useState<Project>(() => new Project());
-    const [activePage, setActivePage] = useState<string | null>(null);
-    // State for loading indicators
-    // These state variables are used in the API, but TypeScript thinks they're unused
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_isLoading, setLoading] = useState<boolean>(false);
-    const [loaded, setLoaded] = useState<boolean>(false);
-    const linkInputRef = useRef<HTMLInputElement>(null);
+  const [project] = useState<Project>(() => new Project());
+  const [activePage, setActivePage] = useState<string | null>(null);
+  // State for loading indicators
+  // These state variables are used in the API, but TypeScript thinks they're unused
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_isLoading, setLoading] = useState<boolean>(false);
+  const [loaded, setLoaded] = useState<boolean>(false);
+  const linkInputRef = useRef<HTMLInputElement>(null);
 
-    // Combine class names
-    const classNames = [
-        'kc-kicanvas-shell',
-        className
-    ].filter(Boolean).join(' ');
+  // Combine class names
+  const classNames = ["kc-kicanvas-shell", className].filter(Boolean).join(" ");
 
-    const shellStyles = `
+  const shellStyles = `
         .kc-kicanvas-shell {
             display: flex;
             flex-direction: column;
@@ -132,177 +129,196 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
         }
     `;
 
-    // Initialize the project from source or URL parameters
-    useEffect(() => {
-        const setupFromURLParams = async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const githubPaths = urlParams.getAll('github');
+  // Initialize the project from source or URL parameters
+  useEffect(() => {
+    const setupFromURLParams = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const githubPaths = urlParams.getAll("github");
 
-            if (src) {
-                const vfs = new FetchFileSystem([src]);
-                await setupProject(vfs);
-                return;
-            }
-
-            if (githubPaths.length > 0) {
-                const vfs = await GitHubFileSystem.fromURLs(...githubPaths);
-                await setupProject(vfs);
-                return;
-            }
-
-            // Set up drag and drop handler
-            const container = document.querySelector(`.${classNames.split(' ')[0]}`);
-            if (container) {
-                new DropTarget(container as HTMLElement, async (fs) => {
-                    await setupProject(fs);
-                });
-            }
-        };
-
-        setupFromURLParams();
-    }, [src]);
-    
-    // Listen for project changes to update active page
-    useEffect(() => {
-        const handleProjectChange = () => {
-            console.log('Project changed, active page:', project.active_page?.project_path);
-            if (project.active_page) {
-                setActivePage(project.active_page.project_path);
-            }
-        };
-        
-        // Add event listener for project changes
-        project.addEventListener('change', handleProjectChange);
-        
-        // Clean up
-        return () => {
-            project.removeEventListener('change', handleProjectChange);
-        };
-    }, [project]);
-
-    // Handle GitHub link input
-    const handleLinkInput = async () => {
-        if (!linkInputRef.current) return;
-
-        const link = linkInputRef.current.value;
-        if (!GitHub.parse_url(link)) {
-            return;
-        }
-
-        const vfs = await GitHubFileSystem.fromURLs(link);
+      if (src) {
+        const vfs = new FetchFileSystem([src]);
         await setupProject(vfs);
+        return;
+      }
 
-        // Update URL
-        const location = new URL(window.location.href);
-        location.searchParams.set('github', link);
-        window.history.pushState(null, '', location);
+      if (githubPaths.length > 0) {
+        const vfs = await GitHubFileSystem.fromURLs(...githubPaths);
+        await setupProject(vfs);
+        return;
+      }
+
+      // Set up drag and drop handler
+      const container = document.querySelector(`.${classNames.split(" ")[0]}`);
+      if (container) {
+        new DropTarget(container as HTMLElement, async (fs) => {
+          await setupProject(fs);
+        });
+      }
     };
 
-    // Set up project with virtual file system
-    const setupProject = async (vfs: VirtualFileSystem) => {
-        setLoaded(false);
-        setLoading(true);
+    setupFromURLParams();
+  }, [src]);
 
-        try {
-            await project.load(vfs);
-            
-            // This is a key difference between the web component and React implementation
-            // The web component calls `update_hierarchical_data` internally, but we need to do it here
-            for (const schematic of project.schematics()) {
-                if (schematic && typeof schematic.update_hierarchical_data === 'function') {
-                    schematic.update_hierarchical_data('/');
-                }
-            }
-            
-            // Set initial active page and update our state
-            project.set_active_page(project.first_page);
-            if (project.active_page) {
-                setActivePage(project.active_page.project_path);
-                console.log(`Initial active page set to: ${project.active_page.project_path} (${project.active_page.type})`);
-            }
-            
-            setLoaded(true);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
+  // Listen for project changes to update active page
+  useEffect(() => {
+    const handleProjectChange = () => {
+      console.log(
+        "Project changed, active page:",
+        project.active_page?.project_path,
+      );
+      if (project.active_page) {
+        setActivePage(project.active_page.project_path);
+      }
+    };
+
+    // Add event listener for project changes
+    project.addEventListener("change", handleProjectChange);
+
+    // Clean up
+    return () => {
+      project.removeEventListener("change", handleProjectChange);
+    };
+  }, [project]);
+
+  // Handle GitHub link input
+  const handleLinkInput = async () => {
+    if (!linkInputRef.current) return;
+
+    const link = linkInputRef.current.value;
+    if (!GitHub.parse_url(link)) {
+      return;
+    }
+
+    const vfs = await GitHubFileSystem.fromURLs(link);
+    await setupProject(vfs);
+
+    // Update URL
+    const location = new URL(window.location.href);
+    location.searchParams.set("github", link);
+    window.history.pushState(null, "", location);
+  };
+
+  // Set up project with virtual file system
+  const setupProject = async (vfs: VirtualFileSystem) => {
+    setLoaded(false);
+    setLoading(true);
+
+    try {
+      await project.load(vfs);
+
+      // This is a key difference between the web component and React implementation
+      // The web component calls `update_hierarchical_data` internally, but we need to do it here
+      for (const schematic of project.schematics()) {
+        if (
+          schematic &&
+          typeof schematic.update_hierarchical_data === "function"
+        ) {
+          schematic.update_hierarchical_data("/");
         }
-    };
+      }
 
-    return (
-        <ProjectContext.Provider value={project}>
-            <style>{shellStyles}</style>
-            <App className={classNames}>
-                {!loaded && (
-                    <section className="overlay">
-                        <h1>
-                            <img src="images/kicanvas.png" alt="KiCanvas logo" />
-                            KiCanvas
-                        </h1>
-                        <p>
-                            KiCanvas is an
-                            <strong> interactive</strong>,
-                            <strong> browser-based</strong> viewer for KiCAD schematics and boards. 
-                            You can learn more from the
-                            <a href="https://kicanvas.org/home" target="_blank" rel="noopener noreferrer"> docs</a>. 
-                            It's in <strong>alpha</strong> so please
-                            <a href="https://github.com/theacodes/kicanvas/issues/new/choose" target="_blank" rel="noopener noreferrer"> report any bugs</a>!
-                        </p>
-                        <input
-                            ref={linkInputRef}
-                            type="text"
-                            placeholder="Paste a GitHub link..."
-                            onChange={handleLinkInput}
-                            autoFocus
-                        />
-                        <p>or drag & drop your KiCAD files</p>
-                        <p className="note">
-                            KiCanvas is
-                            <a href="https://github.com/theacodes/kicanvas" target="_blank" rel="noopener noreferrer"> free & open source</a> and supported by
-                            <a href="https://github.com/theacodes/kicanvas#special-thanks"> community donations</a> with significant support from
-                            <a href="https://partsbox.com/" target="_blank" rel="noopener noreferrer"> PartsBox</a>,
-                            <a href="https://blues.io/" target="_blank" rel="noopener noreferrer"> Blues</a>,
-                            <a href="https://blog.mithis.net/" target="_blank" rel="noopener noreferrer"> Mithro</a>,
-                            <a href="https://github.com/jeremysf" target="_blank" rel="noopener noreferrer"> Jeremy Gordon</a>, &
-                            <a href="https://github.com/jamesneal" target="_blank" rel="noopener noreferrer"> James Neal</a>. 
-                            KiCanvas runs entirely within your browser, so your files don't ever leave your machine.
-                        </p>
-                        <p className="github">
-                            <a
-                                href="https://github.com/theacodes/kicanvas"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title="Visit on GitHub">
-                                <img src="images/github-mark-white.svg" alt="GitHub" />
-                            </a>
-                        </p>
-                    </section>
-                )}
-                
-                <main>
-                    {loaded && (
-                        <>
-                            {/* Force re-render of components when active page changes using key prop */}
-                            {project.active_page?.type === "schematic" && (
-                                <KiCanvasSchematicApp 
-                                    key={`schematic-${activePage}`} 
-                                    controls="full" 
-                                />
-                            )}
-                            {project.active_page?.type === "pcb" && (
-                                <KiCanvasBoardApp 
-                                    key={`board-${activePage}`} 
-                                    controls="full" 
-                                />
-                            )}
-                        </>
-                    )}
-                </main>
-            </App>
-        </ProjectContext.Provider>
-    );
+      // Set initial active page and update our state
+      project.set_active_page(project.first_page);
+      if (project.active_page) {
+        setActivePage(project.active_page.project_path);
+        console.log(
+          `Initial active page set to: ${project.active_page.project_path} (${project.active_page.type})`,
+        );
+      }
+
+      setLoaded(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ProjectContext.Provider value={project}>
+      <style>{shellStyles}</style>
+      <App className={classNames}>
+        {!loaded && (
+          <section className="overlay">
+            <h1>
+              <img src="images/kicanvas.png" alt="KiCanvas logo" />
+              KiCanvas
+            </h1>
+            <p>
+              KiCanvas is an
+              <strong> interactive</strong>,<strong> browser-based</strong>{" "}
+              viewer for KiCAD schematics and boards. You can learn more from
+              the
+              <a
+                href="https://kicanvas.org/home"
+                target="_blank"
+                rel="noopener noreferrer">
+                {" "}
+                docs
+              </a>
+              . It's in <strong>alpha</strong> so please
+              <a
+                href="https://github.com/theacodes/kicanvas/issues/new/choose"
+                target="_blank"
+                rel="noopener noreferrer">
+                {" "}
+                report any bugs
+              </a>
+              !
+            </p>
+            <input
+              ref={linkInputRef}
+              type="text"
+              placeholder="Paste a GitHub link..."
+              onChange={handleLinkInput}
+              autoFocus
+            />
+            <p>or drag & drop your KiCAD files</p>
+            <p className="note">
+              KiCanvas is
+              <a
+                href="https://github.com/abijahkaj/kicanvas-react"
+                target="_blank"
+                rel="noopener noreferrer">
+                {" "}
+                free & open source
+              </a>
+              . KiCanvas runs entirely within your browser, so your files don't
+              ever leave your machine.
+            </p>
+            <p className="github">
+              <a
+                href="https://github.com/abijahkaj/kicanvas-react"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Visit on GitHub">
+                <img src="images/github-mark-white.svg" alt="GitHub" />
+              </a>
+            </p>
+          </section>
+        )}
+
+        <main>
+          {loaded && (
+            <>
+              {/* Force re-render of components when active page changes using key prop */}
+              {project.active_page?.type === "schematic" && (
+                <KiCanvasSchematicApp
+                  key={`schematic-${activePage}`}
+                  controls="full"
+                />
+              )}
+              {project.active_page?.type === "pcb" && (
+                <KiCanvasBoardApp key={`board-${activePage}`} controls="full" />
+              )}
+            </>
+          )}
+        </main>
+      </App>
+    </ProjectContext.Provider>
+  );
 };
 
 // ProjectContext already exported at the top
 
-KiCanvasShell.displayName = 'KiCanvasShell';
+KiCanvasShell.displayName = "KiCanvasShell";
