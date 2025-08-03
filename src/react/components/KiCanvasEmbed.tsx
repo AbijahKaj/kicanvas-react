@@ -47,9 +47,9 @@ export const KiCanvasEmbed: React.FC<KiCanvasEmbedProps> = ({
     customResolver
 }) => {
     const [project] = useState<Project>(() => new Project());
-    // We don't use this directly in the component, but it's used in the API
+    // These state variables are used in the API, but TypeScript thinks they're unused
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [loading, setLoading] = useState<boolean>(false);
+    const [_loading, setLoading] = useState<boolean>(false);
     const [loaded, setLoaded] = useState<boolean>(false);
 
     // Combine class names

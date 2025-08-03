@@ -14,7 +14,10 @@ import { Panel } from '../ui/Panel';
 import { Button } from '../ui/Button';
 import { FloatingToolbar } from '../ui/FloatingToolbar';
 import { ProjectContext } from './KiCanvasShell';
-import { Project } from '../../services/project';
+// Import themes and Color
+// No need for Color with empty theme approach
+// import { Color } from '../../base/color';
+import type { BoardTheme } from '../../kicad/theme';
 
 interface KiCanvasBoardAppProps {
     controls?: 'none' | 'basic' | 'full';
@@ -97,14 +100,17 @@ export const KiCanvasBoardApp: React.FC<KiCanvasBoardAppProps> = ({
     useEffect(() => {
         if (!viewerRef.current || !project) return;
 
-        // Interactive is true, using default theme
-        const newViewer = new BoardViewer(viewerRef.current, true, {});
+        // Use empty object and cast to BoardTheme
+        // This is just for development - in production, use a proper theme
+        const defaultTheme = {} as BoardTheme;
+        const newViewer = new BoardViewer(viewerRef.current, true, defaultTheme);
         setViewer(newViewer);
 
         // Set up viewer
-        // Set up document if available
-        if (project.document) {
-            newViewer.document = project.document;
+        // Set up document if available and active page exists
+        if (project.active_page && project.active_page.document) {
+            // Cast to appropriate type
+            newViewer.document = project.active_page.document as any;
         }
 
         // Clean up

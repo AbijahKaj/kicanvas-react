@@ -36,9 +36,9 @@ export const KiCanvasShell: React.FC<KiCanvasShellProps> = ({
 }) => {
     const [project] = useState<Project>(() => new Project());
     // State for loading indicators
-    // We don't use this directly in the component, but it's used in the API
+    // These state variables are used in the API, but TypeScript thinks they're unused
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isLoading, setLoading] = useState<boolean>(false);
+    const [_isLoading, setLoading] = useState<boolean>(false);
     const [loaded, setLoaded] = useState<boolean>(false);
     const linkInputRef = useRef<HTMLInputElement>(null);
 

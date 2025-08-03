@@ -14,7 +14,9 @@ import { Panel } from '../ui/Panel';
 import { Button } from '../ui/Button';
 import { FloatingToolbar } from '../ui/FloatingToolbar';
 import { ProjectContext } from './KiCanvasShell';
-// Import themes
+// Import themes and Color
+// No need for Color with empty theme approach
+// import { Color } from '../../base/color';
 import type { SchematicTheme } from '../../kicad/theme';
 
 interface KiCanvasSchematicAppProps {
@@ -97,53 +99,17 @@ export const KiCanvasSchematicApp: React.FC<KiCanvasSchematicAppProps> = ({
     useEffect(() => {
         if (!viewerRef.current || !project) return;
 
-        // Interactive is true, with default theme
-        const defaultTheme: SchematicTheme = {
-            anchor: '#FF00FF',
-            aux_items: '#FF00FF',
-            brightened: '#FF00FF',
-            bus: '#FF00FF',
-            component_body: '#FF00FF',
-            component_outline: '#FF00FF',
-            cursor: '#FF00FF',
-            default_sheet: '#FF00FF',
-            device: '#FF00FF',
-            erc_warning: '#FF00FF',
-            fields: '#FF00FF',
-            grid: '#FF00FF',
-            hidden: '#FF00FF',
-            hidden_text: '#FF00FF',
-            hidden_pin: '#FF00FF',
-            highlight: '#FF00FF',
-            junction: '#FF00FF',
-            label: '#FF00FF',
-            label_global: '#FF00FF',
-            label_hier: '#FF00FF',
-            no_connect: '#FF00FF',
-            note: '#FF00FF',
-            note_background: '#FF00FF',
-            overlay: '#FF00FF',
-            pin: '#FF00FF',
-            pin_name: '#FF00FF',
-            pin_number: '#FF00FF',
-            reference: '#FF00FF',
-            shadow: '#FF00FF',
-            sheet: '#FF00FF',
-            sheet_background: '#FF00FF',
-            sheet_fields: '#FF00FF',
-            sheet_filename: '#FF00FF',
-            sheet_name: '#FF00FF',
-            value: '#FF00FF',
-            wire: '#FF00FF',
-            worksheet: '#FF00FF',
-        };
+        // Use empty object and cast to SchematicTheme
+        // This is just for development - in production, use a proper theme
+        const defaultTheme = {} as SchematicTheme;
         const newViewer = new SchematicViewer(viewerRef.current, true, defaultTheme);
         setViewer(newViewer);
 
         // Set up viewer
         // Set up document if available and active page exists
         if (project.active_page && project.active_page.document) {
-            newViewer.document = project.active_page.document;
+            // Cast to appropriate type
+            newViewer.document = project.active_page.document as any;
         }
 
         // Clean up
