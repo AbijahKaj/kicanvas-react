@@ -42,16 +42,16 @@ const devConfig = {
             name: "css-handler",
             setup(build) {
                 build.onLoad({ filter: /\.css$/ }, async (args) => {
-                    const css = await esbuild.build({
-                        entryPoints: [args.path],
-                        bundle: true,
-                        write: false,
-                        loader: "css",
-                    });
+                    const fs = await import("fs");
+                    const css = fs.readFileSync(args.path, "utf8");
 
                     return {
-                        contents: css.outputFiles[0].text,
-                        loader: "css",
+                        contents: `
+                            const style = document.createElement('style');
+                            style.textContent = ${JSON.stringify(css)};
+                            document.head.appendChild(style);
+                        `,
+                        loader: "js",
                     };
                 });
             },
