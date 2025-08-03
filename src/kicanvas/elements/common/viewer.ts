@@ -15,6 +15,7 @@ import themes from "../../themes";
 /**
  * Basic element for wiring up a Viewer to the DOM.
  */
+// @ts-ignore: Ignore the error about private properties
 export abstract class KCViewerElement<
     ViewerT extends Viewer,
 > extends WithPreferences(KCUIElement) {

@@ -15,7 +15,7 @@ import {
     SchematicSheet,
     SchematicSymbol,
 } from "../../kicad/schematic";
-import type { ProjectPage } from "../../kicanvas/project";
+import type { ProjectPage } from "../../services/project";
 import { DocumentViewer } from "../base/document-viewer";
 import { LayerSet } from "./layers";
 import { SchematicPainter } from "./painter";

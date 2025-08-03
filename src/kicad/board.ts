@@ -5,7 +5,7 @@
 */
 
 import { Angle, BBox, Arc as MathArc, Matrix3, Vec2 } from "../base/math";
-import type { Project } from "../kicanvas/project";
+import type { Project } from "../services/project";
 import {
   At,
   Effects,

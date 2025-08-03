@@ -7,7 +7,7 @@
 import { Color } from "../base/color";
 import * as log from "../base/log";
 import { Arc as MathArc, Vec2 } from "../base/math";
-import type { Project } from "../kicanvas/project";
+import type { Project } from "../services/project";
 import {
     At,
     Effects,
