@@ -231,3 +231,54 @@ export class DragAndDropFileSystem extends VirtualFileSystem {
     initiate_download(await this.get(name));
   }
 }
+
+/**
+ * Virtual file system for in-memory content (strings/blobs)
+ */
+export class MemoryFileSystem extends VirtualFileSystem {
+  private files: Map<string, File> = new Map();
+
+  constructor(files: Record<string, string | Blob> = {}) {
+    super();
+
+    for (const [name, content] of Object.entries(files)) {
+      let file: File;
+      if (typeof content === 'string') {
+        file = new File([content], name, { type: 'text/plain' });
+      } else {
+        file = new File([content], name);
+      }
+      this.files.set(name, file);
+    }
+  }
+
+  public addFile(name: string, content: string | Blob): void {
+    let file: File;
+    if (typeof content === 'string') {
+      file = new File([content], name, { type: 'text/plain' });
+    } else {
+      file = new File([content], name);
+    }
+    this.files.set(name, file);
+  }
+
+  public override *list() {
+    yield* this.files.keys();
+  }
+
+  public override async has(name: string): Promise<boolean> {
+    return this.files.has(name);
+  }
+
+  public override async get(name: string): Promise<File> {
+    const file = this.files.get(name);
+    if (!file) {
+      throw new Error(`File ${name} not found!`);
+    }
+    return file;
+  }
+
+  public async download(name: string) {
+    initiate_download(await this.get(name));
+  }
+}
