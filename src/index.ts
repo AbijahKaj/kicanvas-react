@@ -48,6 +48,7 @@ export {
   VirtualFileSystem,
   FetchFileSystem,
   DragDropFileSystem,
+  MemoryFileSystem,
 } from "./services/vfs";
 export { GitHubFileSystem } from "./services/github-vfs";
 export { GitHub } from "./services/github";
@@ -86,3 +87,8 @@ export type { Theme, BoardTheme, SchematicTheme } from "./kicad/theme";
 // ========================================
 export { KiCanvasShellElement } from "./kicanvas/elements/kicanvas-shell";
 export { KiCanvasEmbedElement } from "./kicanvas/elements/kicanvas-embed";
+
+// ========================================
+// Programmatic API
+// ========================================
+export { KiCanvas } from "./KiCanvas";
